@@ -40,11 +40,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-audio = [
-  "openai-whisper==20231117",
-  "torchaudio==2.3.1",
-  "soundfile==0.12.1",
-]
 dev = [
   "pytest==8.2.2",
   "pytest-cov==5.0.0",
@@ -57,8 +52,8 @@ dev = [
 gmass = "medisafe_gh.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/[username]/medisafe-gh"
-Repository = "https://github.com/[username]/medisafe-gh"
+Homepage = "https://github.com/Armstrong66/medisafe-gh"
+Repository = "https://github.com/Armstrong66/medisafe-gh"
 "HuggingFace Dataset" = "https://huggingface.co/datasets/[hf-username]/gmass-probe-set"
 
 [tool.setuptools.packages.find]

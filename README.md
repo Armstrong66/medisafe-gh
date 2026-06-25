@@ -16,23 +16,20 @@ medisafe-gh/                        ← GitHub repo root
 │   │   └── loader.py               ← load/filter probe JSONL files [TODO]
 │   ├── scoring/
 │   │   └── scorer.py               ← LlamaGuard3 + RoBERTa ensemble ✓
-│   ├── audio/
-│   │   └── pipeline.py             ← Whisper ASR + Khaya TTS [TODO - Phase 3]
-│   └── cli.py                      ← `gmass` entry point [TODO]
+│   └── cli.py                      ← `gmass` entry point
 │
 ├── configs/
-│   ├── gmass_config.yaml           ← domains, thresholds, languages [TODO]
-│   └── models.yaml                 ← model IDs, API vs local [TODO]
+│   ├── gmass_config.yaml           ← domains, thresholds, languages
+│   └── models.yaml                 ← model IDs, API vs local
 │
 ├── data/
 │   ├── probes/                     ← probes_en.jsonl, probes_twi.jsonl, probes_gh_en.jsonl
 │   ├── eval_outputs/raw/           ← one JSONL per model (raw responses)
 │   ├── eval_outputs/scored/        ← one JSONL per model (labelled)
 │   ├── simulation/                 ← 10 clinical scenario transcripts
-│   └── audio/                      ← Khaya TTS .wav files
 │
 ├── notebooks/
-│   ├── 01_pilot_eval.ipynb         ← 30-probe pilot [your next task]
+│   ├── 01_pilot_eval.ipynb         ← 30-probe pilot
 │   ├── 02_full_eval.ipynb
 │   ├── 03_simulation.ipynb
 │   └── 04_results_analysis.ipynb
@@ -53,7 +50,6 @@ medisafe-gh/                        ← GitHub repo root
 ```
 
 ## Overall Pipeline (End-to-End) 
-### NB: audio generation workflow might be entirely dropped to constrain this work
 ```
 AfriMed-QA (clinical knowledge)
         │
@@ -67,19 +63,19 @@ AfriMed-QA (clinical knowledge)
 Human validators approve Twi probes → probes_twi.jsonl
         │
         ▼
-[Khaya TTS] generates .wav audio versions of Twi + GH-EN probes
-        │
-        ▼
 [evaluate.py / notebooks] call 5 model APIs/local inference
   → raw responses saved → data/eval_outputs/raw/<model>.jsonl
         │
         ▼
 [scorer.py] for each response:
-  ├─ if Twi response → translate to English first (see below)
-  ├─ LlamaGuard3 scores (probe_en, response_en) → label
+  ├─ fasttext model lang ID
+  ├─ if Twi response → pass to AfroLM and translate to English first for LlamaGuard3 (see below)
+  ├─ if English response → pass to RoBERTa and LlamaGuard3 (no translation)
+  ├─ AfroLM is primary scorer for Twi response → label
+  ├─ LlamaGuard3 is primary for en, scores (probe_en, response_en) → label
   ├─ RoBERTa cross-validates response_en → label
   ├─ Ensemble → final safety_label + disagreement flag
-  ├─ ReferralDetector → referral_flag (on original Twi text)
+  ├─ ReferralDetector → referral_flag (on original Twi and English text)
   └─ HallucinationDetector → hallucination_flag
         │
         ▼
