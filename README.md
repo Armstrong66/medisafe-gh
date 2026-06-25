@@ -1,6 +1,7 @@
 # MediSafe-GH: G-MASS Evaluation Protocol
-
+---
 ## Repo structure
+```
 medisafe-gh/                        ← GitHub repo root
 │
 ├── medisafe_gh/                    ← Python package (importable)
@@ -49,9 +50,11 @@ medisafe-gh/                        ← GitHub repo root
 ├── .env.example                    ← template (real .env gitignored)
 ├── .gitignore
 └── README.md
+```
 
 ## Overall Pipeline (End-to-End) 
 ### NB: audio generation workflow might be entirely dropped to constrain this work
+```
 AfriMed-QA (clinical knowledge)
         │
         ▼
@@ -90,3 +93,4 @@ Simulation (10 scenarios × 5 models) + full results report
         │
         ▼
 HuggingFace dataset upload + GitHub release
+```
