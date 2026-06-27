@@ -1,0 +1,151 @@
+# G-MASS Model Configuration
+# MediSafe-GH · Africa AI Safety Prize 2026
+# ─────────────────────────────────────────────────────────────
+# API keys are NEVER stored here.
+# They are loaded from .env via python-dotenv at runtime.
+#
+# To add a new model: append an entry following the same schema.
+# local: true  → no API key needed, runs on your machine
+# local: false → requires API key in .env
+
+models:
+
+  # ── Proprietary / API-based models ───────────────────────────
+
+  - id:          gpt-4o-mini
+    name:        GPT-4o mini
+    provider:    openai
+    local:       false
+    api_env_var: OPENAI_API_KEY     # set in .env
+    cost_per_1m_input_usd:  0.15   # as of 2026
+    cost_per_1m_output_usd: 0.60
+    notes: >
+      Use GPT-4o mini (not full GPT-4o) for cost efficiency.
+      94% cheaper than GPT-4o, comparable on safety classification.
+      Batch API available at 50% discount for non-urgent runs.
+
+  - id:          gemini-1.5-flash
+    name:        Gemini 1.5 Flash
+    provider:    google
+    local:       false
+    api_env_var: GOOGLE_API_KEY     # set in .env
+    cost_per_1m_input_usd:  0.075
+    cost_per_1m_output_usd: 0.30
+    notes: >
+      Free tier: 1,500 requests/day, 15 RPM.
+      Sufficient for our 900-call Gemini batch if spread over 1–2 days.
+      Upgrade to pay-as-you-go if rate limits are hit.
+
+  # ── Local models (free, run via Ollama) ──────────────────────
+  # Setup: ollama pull llama3.2:3b && ollama pull phi3:mini
+  # Then:  ollama serve   (keep running in background)
+
+  - id:          llama-3.2-3b
+    name:        LLaMA 3.2 3B
+    provider:    local
+    local:       true
+    inference:   ollama
+    ollama_name: llama3.2:3b
+    cost_per_1m_input_usd:  0.0    # local inference
+    cost_per_1m_output_usd: 0.0
+    notes: >
+      Lightweight open-source model. Runs on CPU or RTX.
+      RTX: ~2s/call. CPU: ~15–30s/call.
+      Good for testing pipeline before API calls.
+
+  - id:          phi-3-mini
+    name:        Phi-3 Mini
+    provider:    local
+    local:       true
+    inference:   ollama
+    ollama_name: phi3:mini
+    cost_per_1m_input_usd:  0.0
+    cost_per_1m_output_usd: 0.0
+    notes: >
+      Microsoft's compact model (~3.8B params).
+      Strong instruction following for its size.
+      Ollama name: phi3:mini
+
+  # ── Local models (HuggingFace Transformers) ──────────────────
+  # Requires ~14GB disk for model weights on first run.
+  # RTX strongly recommended (CPU runs are very slow for 7B models).
+
+  - id:          biomistral-7b
+    name:        BioMistral 7B
+    provider:    local
+    local:       true
+    inference:   huggingface
+    hf_model_id: BioMistral/BioMistral-7B
+    cost_per_1m_input_usd:  0.0
+    cost_per_1m_output_usd: 0.0
+    notes: >
+      Mistral 7B fine-tuned on PubMed biomedical text.
+      Included to represent a domain-adapted medical model.
+      RTX: ~3–5s/call with float16. CPU: ~5–10 min/call — use RTX.
+      Download once: huggingface-cli download BioMistral/BioMistral-7B
+
+# ── Scorer models (not evaluated — used as judges) ────────────
+scorers:
+
+  - id:          llamaguard3
+    name:        LlamaGuard 3 8B
+    hf_model_id: meta-llama/Llama-Guard-3-8B
+    local:       true           # preferred (RTX)
+    cloudflare_fallback: true   # use CF Workers AI on Kaggle
+    cf_env_var:  CF_API_TOKEN
+    cf_account_env_var: CF_ACCOUNT_ID
+    notes: >
+      Primary safety classifier for English and GH-EN responses.
+      Cross-validator for Twi responses (after Khaya back-translation).
+      Requires HuggingFace access token for gated model download.
+
+  - id:          roberta-safety
+    name:        RoBERTa Safety Classifier
+    hf_model_id: facebook/roberta-hate-speech-dynabench-r4-target
+    local:       true
+    notes: >
+      Lightweight cross-validator for English and GH-EN.
+      CPU-friendly (~500MB). Used alongside LlamaGuard3.
+
+  - id:          afrolm
+    name:        AfroLM
+    hf_model_id: AfroNLU/afrolm-v1
+    local:       true
+    languages_supported:
+      - tw   # Twi — primary use case for G-MASS
+      - yo   # Yoruba
+      - ha   # Hausa
+      - ig   # Igbo
+      # + 19 more African languages
+    notes: >
+      Primary scorer for Twi-language model responses.
+      Pretrained from scratch on 23 African languages (RoBERTa architecture).
+      Do NOT use for English or GH-EN — route those to RoBERTa + LlamaGuard3.
+
+  - id:          fasttext-lid
+    name:        fasttext Language Identification
+    model_path:  models/fasttext/lid.176.bin
+    notes: >
+      Language router: detects Twi vs English/GH-EN in model responses.
+      Covers 176 languages including Twi (__label__tw).
+      ~1MB, runs in microseconds. Download via:
+        curl -sL https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin \
+          -o models/fasttext/lid.176.bin
+
+# ── Translation / TTS (not models, but external APIs) ─────────
+translation:
+
+  - id:          khaya
+    name:        Khaya Translation API (GhanaNLP)
+    api_url:     https://translation-api.ghananlp.org/v1/translate
+    tts_url:     https://tts-api.ghananlp.org/v1/tts
+    env_var:     KHAYA_API_KEY
+    languages:   [tw, ak, ee, gaa, dag]   # Twi, Akan, Ewe, Ga, Dagbani
+    use_for:
+      - probe_translation                  # EN → Twi (probe creation)
+      - back_translation                   # Twi response → EN (before LlamaGuard3)
+    notes: >
+      Request research API key at: https://ghananlp.org
+      Back-translation accuracy is imperfect — Khaya output goes to
+      LlamaGuard3 as secondary cross-validator only, not primary scorer.
+      AfroLM scores the original Twi text directly.
