@@ -164,7 +164,7 @@ Please cite our work:
   title={MediSafe-GH: A Clinical Safety Screen for Medical AI Assistants in Ghanaian Languages},
   authors={Joseph Derrick Anane Nti Koduah, Michael Asiedu Asare, Emmanuel Owusu, Benjamin Appiah Yeboah},
   year={2026},
-  version={v0.1.0}
+  version={v0.1.0},
   publisher={GitHub},
   note={Submission for the CASA Africa AI Safety Prize Competition 2026}
 }
