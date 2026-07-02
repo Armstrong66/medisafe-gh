@@ -1,1 +1,1 @@
-"""Core: metrics, config, logging, shared utilities."""
+"""Core utilities for the G-MASS evaluation pipeline."""
