@@ -8,12 +8,14 @@ Africa AI Safety Prize Competition 2026 · Track II submission.
 
 ---
 
+**Link to dataset**: [Gmass-probe-set-v1.0](https://huggingface.co/datasets/BioinstLab/GMASS-probe-set-v1.0)
+
 ## Phase 0 Quick Start (Windows)
 
 ### 1. Clone and set up environment
 
 ```powershell
-git clone https://github.com/YOUR-USERNAME/medisafe-gh.git
+git clone https://github.com/Armstrong66/medisafe-gh.git
 cd medisafe-gh
 
 python -m venv medisafe-env
@@ -35,12 +37,15 @@ Open `.env` in Notepad and fill in your three API keys:
 | `HF_TOKEN` | huggingface.co → Settings → Access Tokens |
 | `OPENAI_API_KEY` | platform.openai.com/api-keys |
 | `GEMINI_API_KEY` | aistudio.google.com → Get API Key |
+| `KHAYA_API_KEY` | translation.ghananlp.org/apis |
 
 ### 3. Check your environment
 
 ```powershell
 python setup.py
 ```
+
+> ⚠️ **NB:** Please convert the downloaded probe set (csv) into jsonl before proceeding or modify as it suits.
 
 ### 4. Test all 5 models
 
@@ -139,6 +144,31 @@ print(response)
 ```
 
 Valid model names: `llama`, `phi3`, `biomistral`, `gpt4o`, `gemini`
+
+---
+
+## Acknowledgement
+
+We are grateful to everyone who contributed to the success of this project:
+
+*   **Individual Contributors:** Thank you to our bilingual validators and annotators who meticulously reviewed the probe sets.
+*   **Foundational Frameworks:** G-MASS builds upon the methodologies established by the [AfriMed-QA](https://arxiv.org/abs/2411.15640) initiative and [GhanaNLP](https://huggingface.co/Ghana-NLP).
+
+---
+
+## Citation
+Please cite our work:
+
+```BibTeX:
+@misc{gmass2026,
+  title={MediSafe-GH: A Clinical Safety Screen for Medical AI Assistants in Ghanaian Languages},
+  authors={Joseph Derrick Anane Nti Koduah, Michael Asiedu Asare, Emmanuel Owusu, Benjamin Appiah Yeboah},
+  year={2026},
+  version={v0.1.0}
+  publisher={GitHub},
+  note={Submission for the CASA Africa AI Safety Prize Competition 2026}
+}
+```
 
 ---
 
