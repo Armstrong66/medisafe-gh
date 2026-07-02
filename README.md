@@ -1,92 +1,147 @@
-# MediSafe-GH: G-MASS Evaluation Protocol
+# MediSafe-GH · G-MASS
+
+**Ghana Medical AI Safety Screen** — an open-source evaluation protocol that
+tests whether AI health assistants behave safely when queried in Twi and
+Ghanaian English.
+
+Africa AI Safety Prize Competition 2026 · Track II submission.
+
 ---
-## Repo structure
-```
-medisafe-gh/                        ← GitHub repo root
-│
-├── medisafe_gh/                    ← Python package (importable)
-│   ├── __init__.py                 ← exposes top-level API
-│   ├── core/
-│   │   ├── config.py               ← YAML loader
-│   │   ├── logger.py               ← nohup-safe rotating logger
-│   │   ├── metrics.py              ← CSR, SDS, RAR (single source of truth)
-│   │   └── utils.py                ← I/O, caching, env detection
-│   ├── probes/
-│   │   ├── builder.py              ← AfriMed-QA seeding + example probes ✓
-│   │   └── loader.py               ← load/filter probe JSONL files [TODO]
-│   ├── scoring/
-│   │   └── scorer.py               ← LlamaGuard3 + RoBERTa ensemble ✓
-│   └── cli.py                      ← `gmass` entry point
-│
-├── configs/
-│   ├── gmass_config.yaml           ← domains, thresholds, languages
-│   └── models.yaml                 ← model IDs, API vs local
-│
-├── data/
-│   ├── probes/                     ← probes_en.jsonl, probes_twi.jsonl, probes_gh_en.jsonl
-│   ├── eval_outputs/raw/           ← one JSONL per model (raw responses)
-│   ├── eval_outputs/scored/        ← one JSONL per model (labelled)
-│   ├── simulation/                 ← 10 clinical scenario transcripts
-│
-├── notebooks/
-│   ├── 01_pilot_eval.ipynb         ← 30-probe pilot
-│   ├── 02_full_eval.ipynb
-│   ├── 03_simulation.ipynb
-│   └── 04_results_analysis.ipynb
-│
-├── scripts/
-│   └── build_probe_set.py          ← runs builder.py end-to-end
-│
-├── tests/
-│   ├── test_metrics.py
-│   └── test_scorer.py
-│
-├── logs/                           ← gmass_eval.log (gitignored)
-├── pyproject.toml                  ✓
-├── requirements.txt
-├── .env.example                    ← template (real .env gitignored)
-├── .gitignore
-└── README.md
+
+## Phase 0 Quick Start (Windows)
+
+### 1. Clone and set up environment
+
+```powershell
+git clone https://github.com/YOUR-USERNAME/medisafe-gh.git
+cd medisafe-gh
+
+python -m venv medisafe-env
+medisafe-env\Scripts\activate
+
+pip install -r requirements.txt
 ```
 
-## Overall Pipeline (End-to-End) 
+### 2. Create your .env file
+
+```powershell
+copy .env.example .env
 ```
-AfriMed-QA (clinical knowledge)
-        │
-        ▼
-[builder.py] Team B drafts 300 English probes (6 domains × 3 categories)
-        │
-        ▼
-[Khaya API / GhanaNLP model] Team C generates Twi drafts
-        │
-        ▼
-Human validators approve Twi probes → probes_twi.jsonl
-        │
-        ▼
-[evaluate.py / notebooks] call 5 model APIs/local inference
-  → raw responses saved → data/eval_outputs/raw/<model>.jsonl
-        │
-        ▼
-[scorer.py] for each response:
-  ├─ fasttext model lang ID
-  ├─ if Twi response → pass to AfroLM and translate to English first for LlamaGuard3 (see below)
-  ├─ if English response → pass to RoBERTa and LlamaGuard3 (no translation)
-  ├─ AfroLM is primary scorer for Twi response → label
-  ├─ LlamaGuard3 is primary for en, scores (probe_en, response_en) → label
-  ├─ RoBERTa cross-validates response_en → label
-  ├─ Ensemble → final safety_label + disagreement flag
-  ├─ ReferralDetector → referral_flag (on original Twi and English text)
-  └─ HallucinationDetector → hallucination_flag
-        │
-        ▼
-scored JSONL → data/eval_outputs/scored/<model>_scored.jsonl
-        │
-        ▼
-[metrics.py] compute CSR, SDS, RAR per model per language
-        │
-        ▼
-Simulation (10 scenarios × 5 models) + full results report
-        │
-        ▼
-HuggingFace dataset upload + GitHub release
+
+Open `.env` in Notepad and fill in your three API keys:
+
+| Key | Where to get it |
+|-----|----------------|
+| `HF_TOKEN` | huggingface.co → Settings → Access Tokens |
+| `OPENAI_API_KEY` | platform.openai.com/api-keys |
+| `GEMINI_API_KEY` | aistudio.google.com → Get API Key |
+
+### 3. Check your environment
+
+```powershell
+python setup.py
 ```
+
+### 4. Test all 5 models
+
+```powershell
+python test_models.py
+```
+
+Test a single model:
+
+```powershell
+python test_models.py llama
+python test_models.py phi3
+python test_models.py biomistral
+python test_models.py gpt4o
+python test_models.py gemini
+```
+
+---
+
+## Running Phi-3 and BioMistral Locally
+
+Phi-3 and BioMistral are open-weight models. They can use the Hugging Face
+router, a local OpenAI-compatible server, or direct local `transformers`
+loading.
+
+### Option A: direct local Transformers
+
+Install the optional local dependencies:
+
+```powershell
+pip install -r requirements-local.txt
+```
+
+Add this to `.env`:
+
+```env
+PHI3_BACKEND=transformers
+BIOMISTRAL_BACKEND=transformers
+LOCAL_DEVICE_MAP=auto
+LOCAL_TORCH_DTYPE=auto
+LOCAL_MAX_NEW_TOKENS=512
+LOCAL_TEMPERATURE=0
+```
+
+Then run:
+
+```powershell
+python test_models.py phi3
+python test_models.py biomistral
+```
+
+BioMistral is a 7B model, so it may need a GPU or a quantized local runtime.
+
+### Option B: local OpenAI-compatible server
+
+Use this if you run the models with a server such as vLLM. Add this to `.env`:
+
+```env
+PHI3_BACKEND=local_openai
+PHI3_LOCAL_BASE_URL=http://localhost:8000/v1
+PHI3_LOCAL_MODEL=microsoft/Phi-3-mini-4k-instruct
+
+BIOMISTRAL_BACKEND=local_openai
+BIOMISTRAL_LOCAL_BASE_URL=http://localhost:8001/v1
+BIOMISTRAL_LOCAL_MODEL=BioMistral/BioMistral-7B-SLERP
+```
+
+The public router names stay the same:
+
+```powershell
+python test_models.py phi3
+python test_models.py biomistral
+```
+
+---
+
+## Models
+
+| Model | Provider | Via |
+|-------|----------|-----|
+| LLaMA 3.2 3B Instruct | Meta | HuggingFace Inference API |
+| Phi-3 Mini 4K Instruct | Microsoft | HuggingFace Inference API |
+| BioMistral 7B SLERP | BioMistral | HuggingFace Inference API |
+| GPT-4o | OpenAI | OpenAI API |
+| Gemini 1.5 Flash | Google | Google Generative AI API |
+
+---
+
+## Using the Router in Your Code
+
+```python
+from models.router import call_model
+
+response = call_model("llama", "What are the symptoms of malaria?")
+print(response)
+```
+
+Valid model names: `llama`, `phi3`, `biomistral`, `gpt4o`, `gemini`
+
+---
+
+## Licence
+
+Apache 2.0

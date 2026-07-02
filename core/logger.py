@@ -1,108 +1,59 @@
 """
-medisafe_gh.core.logger — shared logging helper.
-
-Supports interactive sessions (Kaggle, Jupyter), terminal runs,
-and nohup background runs on RTX without disturbing downstream code.
-
-Usage:
-    from medisafe_gh.core.logger import get_logger
-    logger = get_logger(__name__)
-
-nohup pattern (RTX):
-    nohup python -m medisafe_gh.cli evaluate > logs/nohup_out.txt 2>&1 &
-    tail -f logs/gmass_eval.log
+logger.py — nohup-safe rotating logger for G-MASS evaluation runs.
+Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
 """
 
 import logging
 import os
-import sys
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
-LOG_DIR   = Path(__file__).resolve().parent.parent.parent / "logs"
-LOG_FILE  = LOG_DIR / "gmass_eval.log"
-MAX_BYTES = 5 * 1024 * 1024   # 5 MB — rotate after this
-BACKUPS   = 3
-LEVEL     = os.getenv("GMASS_LOG_LEVEL", "INFO").upper()
-
-# ── Internal helpers ────────────────────────────────────────────────────────────────
-def _is_nohup() -> bool:
-    return not sys.stdout.isatty()
+LOG_DIR  = os.getenv("GMASS_LOG_DIR", "logs")
+LOG_FILE = os.path.join(LOG_DIR, "gmass_eval.log")
+LOG_FMT  = "%(asctime)s [%(levelname)s] %(name)s — %(message)s"
+DATE_FMT = "%Y-%m-%dT%H:%M:%S"
 
 
-def _is_notebook() -> bool:
-    try:
-        from IPython import get_ipython
-        return get_ipython() is not None
-    except ImportError:
-        return False
-
-
-def _plain_formatter() -> logging.Formatter:
-    return logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-
-
-def _file_handler() -> RotatingFileHandler:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    h = RotatingFileHandler(LOG_FILE, maxBytes=MAX_BYTES,
-                            backupCount=BACKUPS, encoding="utf-8")
-    h.setFormatter(_plain_formatter())
-    h.setLevel(LEVEL)
-    return h
-
-
-def _console_handler() -> logging.Handler:
-    if _is_nohup():
-        # Detached run — plain stderr only (stdout → nohup_out.txt)
-        h = logging.StreamHandler(sys.stderr)
-        h.setFormatter(_plain_formatter())
-        h.setLevel(LEVEL)
-        return h
-    try:
-        from rich.logging import RichHandler
-        h = RichHandler(rich_tracebacks=True, markup=True, show_path=False)
-        h.setLevel(LEVEL)
-        return h
-    except ImportError:
-        h = logging.StreamHandler(sys.stdout)
-        h.setFormatter(_plain_formatter())
-        h.setLevel(LEVEL)
-        return h
-
-# ── Public API ────────────────────────────────────────────────────────────────
 def get_logger(name: str) -> logging.Logger:
-    """Return a configured logger. Always writes to rotating log file + console."""
+    """
+    Return a named logger that writes to both console and a rotating log file.
+    Safe to call multiple times with the same name — returns the same logger.
+
+    Args:
+        name : typically __name__ of the calling module
+
+    Returns:
+        Configured logging.Logger instance.
+
+    Example:
+        from core.logger import get_logger
+        logger = get_logger(__name__)
+        logger.info("Evaluation started")
+    """
     logger = logging.getLogger(name)
+
     if logger.handlers:
-        return logger
-    logger.setLevel(LEVEL)
-    logger.addHandler(_file_handler())
-    logger.addHandler(_console_handler())
-    logger.propagate = False
+        return logger  # already configured
+
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(LOG_FMT, datefmt=DATE_FMT)
+
+    # Console handler — INFO and above
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    console.setFormatter(formatter)
+    logger.addHandler(console)
+
+    # Rotating file handler — DEBUG and above, 5 MB per file, 3 backups
+    try:
+        os.makedirs(LOG_DIR, exist_ok=True)
+        file_handler = RotatingFileHandler(
+            LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
+        )
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    except OSError:
+        logger.warning(f"Could not create log file at {LOG_FILE}. Logging to console only.")
+
     return logger
-
-
-def log_run_header(logger: logging.Logger, config: dict) -> None:
-    """Structured header logged at the start of every evaluation run."""
-    sep = "=" * 64
-    logger.info(sep)
-    logger.info(f"G-MASS RUN START — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    for k, v in config.items():
-        logger.info(f"  {k:<22}: {v}")
-    logger.info(sep)
-
-
-def log_run_footer(logger: logging.Logger, n_done: int,
-                   n_total: int, elapsed: float) -> None:
-    """Structured footer logged at the end of every evaluation run."""
-    sep = "=" * 64
-    logger.info(sep)
-    logger.info("G-MASS RUN COMPLETE")
-    logger.info(f"  Completed : {n_done}/{n_total}")
-    logger.info(f"  Elapsed   : {elapsed:.1f}s ({elapsed/60:.1f} min)")
-    logger.info(f"  Log file  : {LOG_FILE}")
-    logger.info(sep)
