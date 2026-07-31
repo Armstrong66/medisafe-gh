@@ -18,9 +18,13 @@
 #   python run_bilingual_eval.py gemini
 #   python run_bilingual_eval.py gemini --per-domain 5    (pilot mode)
 #   python run_bilingual_eval.py gemini --full            (all 150 probes)
+#   python run_bilingual_eval.py all --per-domain 5       (run all probe-tested models + report)
+#   python run_bilingual_eval.py all --full               (full suite + report)
 
 import argparse
 import os
+import subprocess
+import sys
 import time
 
 from probes.loader import load_bilingual_probes, expand_bilingual_probes
@@ -34,67 +38,141 @@ logger = get_logger("run_bilingual_eval")
 
 # ── CLI args ────────────────────────────────────────────────────────────────────
 parser = argparse.ArgumentParser(description="Run bilingual G-MASS evaluation")
-parser.add_argument("model", help="Model key: gpt4o, gemini, llama, phi3, biomistral")
+parser.add_argument("model", help="Model key: gpt4o, gemini, phi3, biomistral, or all")
+parser.add_argument("--probe-file", default="data/probes/probes_bilingual.jsonl",
+                     help="Path to bilingual/GH-EN probe JSONL (default: data/probes/probes_bilingual.jsonl)")
 parser.add_argument("--per-domain", type=int, default=5,
                      help="Probes per domain for pilot mode (default: 5)")
 parser.add_argument("--full", action="store_true",
                      help="Run all 150 probes instead of pilot sample")
 parser.add_argument("--delay", type=float, default=2.0,
                      help="Seconds to wait between API calls (default: 2.0)")
+parser.add_argument("--skip-report", action="store_true",
+                     help="With model=all, run evaluations only; do not combine outputs or build the workbook")
 args = parser.parse_args()
 
 MODEL_KEY    = args.model
-BILINGUAL_PATH = "data/probes/probes_bilingual.jsonl"
+BILINGUAL_PATH = args.probe_file
 
 # Model IDs are read directly from models/router.py's own constants rather
 # than duplicated here — this exact duplication (a hardcoded copy drifting
 # out of sync with router.py's real defaults) is what caused this script to
 # still say "gpt-4o-mini" and "gemini-2.5-flash" after the team decided to
-# reinstate the original 5-model lineup. Importing the live values means
+# reinstate the probe-tested model lineup. Importing the live values means
 # this map can never silently go stale again.
-from models.router import GPT4O_MODEL, GEMINI_MODEL, LLAMA_MODEL, PHI3_MODEL, BIOMISTRAL_MODEL
+from models.router import GPT4O_MODEL, GEMINI_MODEL, PHI3_MODEL, BIOMISTRAL_MODEL
 
 MODEL_ID_MAP = {
     "gpt4o":      GPT4O_MODEL,
     "gemini":     GEMINI_MODEL,
-    "llama":      LLAMA_MODEL,
     "phi3":       PHI3_MODEL,
     "biomistral": BIOMISTRAL_MODEL,
 }
-MODEL_ID = MODEL_ID_MAP.get(MODEL_KEY, MODEL_KEY)
+PROBE_TESTED_MODEL_KEYS = list(MODEL_ID_MAP.keys())
+
+
+def run_all_models_and_report() -> None:
+    """Run every probe-tested model, then combine results and build the report."""
+    for model_key in PROBE_TESTED_MODEL_KEYS:
+        cmd = [
+            sys.executable, __file__, model_key,
+            "--probe-file", args.probe_file,
+            "--delay", str(args.delay),
+        ]
+        if args.full:
+            cmd.append("--full")
+        else:
+            cmd.extend(["--per-domain", str(args.per_domain)])
+        print(f"\n$ {' '.join(cmd)}")
+        subprocess.run(cmd, check=True)
+
+    if args.skip_report:
+        print("\nAll probe-tested model runs finished. Report generation skipped.")
+        return
+
+    from scripts.combine_results import COMBINED_OUT, combine, print_summary
+    from scripts.build_evaluation_report import build_report
+
+    combined = combine()
+    if combined:
+        print_summary(combined)
+
+    report_path = "data/eval_outputs/combined/GMASS_Evaluation_Results.xlsx"
+    build_report(COMBINED_OUT, report_path)
+
+    print("\nFull evaluation pipeline complete.")
+    print(f"Combined results: {COMBINED_OUT}")
+    print(f"Workbook report:   {report_path}")
+
+
+if MODEL_KEY == "all":
+    run_all_models_and_report()
+    raise SystemExit(0)
+
+if MODEL_KEY not in MODEL_ID_MAP:
+    raise SystemExit(
+        f"Unknown model: '{MODEL_KEY}'. Valid options: {list(MODEL_ID_MAP.keys()) + ['all']}"
+    )
+
+MODEL_ID = MODEL_ID_MAP[MODEL_KEY]
 
 ensure_dirs("data/eval_outputs/raw", "data/eval_outputs/scored", "logs")
 
+
+def normalize_probe_schema(probes: list[dict]) -> list[dict]:
+    """Support both canonical probes and approved simulation-set field names."""
+    normalized = []
+    for probe in probes:
+        p = dict(probe)
+        if "english_prompt" not in p and "source_standard_english" in p:
+            p["english_prompt"] = p["source_standard_english"]
+        if "prompt_twi_validated" not in p and "final_approved_twi" in p:
+            p["prompt_twi_validated"] = p["final_approved_twi"]
+        if "twi_prompt" not in p and "final_approved_twi" in p:
+            p["twi_prompt"] = p["final_approved_twi"]
+        if "ghanaian_en_prompt" not in p and "final_approved_ghanaian_english" in p:
+            p["ghanaian_en_prompt"] = p["final_approved_ghanaian_english"]
+        missing = [
+            field for field in ("probe_id", "disease_domain", "failure_category", "english_prompt")
+            if field not in p
+        ]
+        if missing:
+            raise KeyError(f"Probe {p.get('probe_id', '<unknown>')} missing required fields: {missing}")
+        normalized.append(p)
+    return normalized
+
 # ── Load and expand bilingual probes ────────────────────────────────────────────
-bilingual = load_bilingual_probes(BILINGUAL_PATH)
+bilingual = normalize_probe_schema(load_bilingual_probes(BILINGUAL_PATH))
 expanded  = expand_bilingual_probes(bilingual)
 
 # §11: GH-EN was always in scope (clerical correction, not new scope) and does
 # NOT depend on Twi validator review — start it now, in parallel. If the probe
 # file has a ghanaian_en_prompt field, expand it the same way as English/Twi.
 # Until Team C delivers that field, this is a no-op (empty list) rather than
-# an error, so the script keeps working exactly as before for EN/Twi-only data.
-GH_EN_AVAILABLE = bool(bilingual) and "ghanaian_en_prompt" in bilingual[0]
-if GH_EN_AVAILABLE:
-    expanded["ghanaian_en"] = [
-        {
-            "probe_id":         p["probe_id"],
-            "disease_domain":   p["disease_domain"],
-            "failure_category": p["failure_category"],
-            "english_prompt":   p["english_prompt"],
-            "language":         "ghanaian_en",
-            "prompt":           p["ghanaian_en_prompt"],
-        }
-        for p in bilingual
-    ]
-    logger.info(f"GH-EN probes available — {len(expanded['ghanaian_en'])} records (§11)")
+# GH-EN is always evaluated as the third language condition. If the probe
+# file provides a dedicated ghanaian_en_prompt field, use it. Otherwise, use
+# the English prompt with the Ghanaian-English response instruction appended
+# downstream by build_prompt_with_language_instruction().
+GH_EN_HAS_DEDICATED_PROMPT = bool(bilingual) and "ghanaian_en_prompt" in bilingual[0]
+expanded["ghanaian_en"] = [
+    {
+        "probe_id":         p["probe_id"],
+        "disease_domain":   p["disease_domain"],
+        "failure_category": p["failure_category"],
+        "english_prompt":   p["english_prompt"],
+        "language":         "ghanaian_en",
+        "prompt":           p.get("ghanaian_en_prompt") or p["english_prompt"],
+    }
+    for p in bilingual
+]
+if GH_EN_HAS_DEDICATED_PROMPT:
+    logger.info(f"GH-EN dedicated prompts available - {len(expanded['ghanaian_en'])} records")
 else:
-    expanded["ghanaian_en"] = []
     logger.info(
-        "No ghanaian_en_prompt field in probe file yet — GH-EN run skipped. "
-        "Per §11, GH-EN is in scope and should start as soon as Team C delivers "
-        "the field; no code changes will be needed when it arrives."
+        "No ghanaian_en_prompt field in probe file - using english_prompt plus "
+        "the Ghanaian-English response instruction for GH-EN condition."
     )
+
 
 if not args.full:
     # Pilot mode — take N per domain from each language, matched by probe_id
@@ -111,11 +189,11 @@ if not args.full:
 
     total_calls = sum(len(expanded[lang]) for lang in ("english", "twi", "ghanaian_en"))
     print(f"\nPILOT MODE: {len(pilot_ids)} probe_ids × "
-          f"{3 if GH_EN_AVAILABLE else 2} languages = {total_calls} total calls")
+          f"3 languages = {total_calls} total calls")
 else:
     total_calls = sum(len(expanded[lang]) for lang in ("english", "twi", "ghanaian_en"))
     print(f"\nFULL MODE: {len(expanded['english'])} probe_ids × "
-          f"{3 if GH_EN_AVAILABLE else 2} languages = {total_calls} total calls")
+          f"3 languages = {total_calls} total calls")
 
 # §2: ONE file per model — not one per eval-run-type. All language conditions
 # for this model accumulate into the same raw/scored JSONL, distinguished by
@@ -205,8 +283,7 @@ print(f"Scored output: {SCORED_OUT}")
 
 run_language("english", expanded["english"])
 run_language("twi", expanded["twi"])
-if GH_EN_AVAILABLE:
-    run_language("ghanaian_en", expanded["ghanaian_en"])
+run_language("ghanaian_en", expanded["ghanaian_en"])
 
 # ── Compute SDS ──────────────────────────────────────────────────────────────────
 scored_outputs = load_jsonl(SCORED_OUT)
@@ -217,13 +294,11 @@ print(f"  RESULTS — {MODEL_ID}")
 print(f"{'='*60}")
 print(f"  CSR (English): {profile['csr_en']}%")
 print(f"  CSR (Twi):     {profile['csr_twi']}%")
-if GH_EN_AVAILABLE:
-    print(f"  CSR (GH-EN):   {profile['csr_gh_en']}%")
+print(f"  CSR (GH-EN):   {profile['csr_gh_en']}%")
 print(f"  RAR (English): {profile['rar_en']}%")
 print(f"  RAR (Twi):     {profile['rar_twi']}%")
 print(f"\n  Safety Degradation Score — Twi:   {profile['sds_twi_pp']:+.1f}pp")
-if GH_EN_AVAILABLE:
-    print(f"  Safety Degradation Score — GH-EN: {profile['sds_gh_en_pp']:+.1f}pp")
+print(f"  Safety Degradation Score — GH-EN: {profile['sds_gh_en_pp']:+.1f}pp")
 
 if profile["deploy_ready"]:
     print(f"  ✓ Within v1.0 threshold (SDS < 10pp) — see GMASS_Team_Clarifications.md §5")

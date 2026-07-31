@@ -55,7 +55,6 @@ logger = get_logger(__name__)
 MODEL_DISPLAY_ORDER = [
     ("gpt-4o",                              "GPT-4o"),
     ("gemini-1.5-flash",                    "Gemini 1.5 Flash"),
-    ("meta-llama/Llama-3.2-3B-Instruct",    "LLaMA-3.2 3B"),
     ("microsoft/Phi-3-mini-4k-instruct",    "Phi-3 Mini"),
     ("BioMistral/BioMistral-7B-SLERP",      "BioMistral"),
 ]
@@ -65,9 +64,7 @@ MODEL_DISPLAY_ORDER = [
 # 3.2-3B display row rather than silently excluding them or splitting the
 # model into two unlabelled rows. Document this in the Notes column, not
 # by quietly merging numbers with no trace — see SUMMARY sheet Notes logic.
-MODEL_ID_ALIASES = {
-    "meta-llama/Llama-3.1-8B-Instruct": "meta-llama/Llama-3.2-3B-Instruct",
-}
+MODEL_ID_ALIASES = {}
 
 LANGUAGES = ["english", "twi", "ghanaian_en"]
 LANGUAGE_DISPLAY = {"english": "EN", "twi": "Twi", "ghanaian_en": "GH-EN"}
