@@ -1,5 +1,5 @@
-﻿# configs/models.yaml
-# Model IDs and provider settings â€” loaded by core/config.py
+# configs/models.yaml
+# Model IDs and provider settings -- loaded by core/config.py
 # Owner: D
 
 models:
@@ -8,7 +8,7 @@ models:
     provider: openai
     local: false
     api_env_var: OPENAI_API_KEY
-    notes: "Reinstated full GPT-4o per explicit team decision, overriding GMASS_Team_Clarifications.md Â§9's GPT-4o mini recommendation. Override via GPT4O_MODEL env var (e.g. set to gpt-4o-mini to revert to the Â§9 cost-saving option)."
+    notes: "Reinstated full GPT-4o per explicit team decision, overriding GMASS_Team_Clarifications.md §9's GPT-4o mini recommendation. Override via GPT4O_MODEL env var (e.g. set to gpt-4o-mini to revert to the §9 cost-saving option)."
 
   - id: gemini-1.5-flash
     key: gemini
@@ -22,12 +22,12 @@ models:
     provider: huggingface_router
     local: false
     api_env_var: HF_TOKEN
-    notes: "Matches original lineup exactly â€” no substitution needed."
+    notes: "Matches original lineup exactly -- no substitution needed."
 
   - id: BioMistral/BioMistral-7B-SLERP
     key: biomistral
     provider: huggingface_router
     local: false
     api_env_var: HF_TOKEN
-    notes: "Matches original lineup exactly â€” no substitution needed."
+    notes: "Matches original lineup exactly -- no substitution needed."
 

@@ -1,22 +1,20 @@
-# setup.py
-# MediSafe-GH G-MASS Project
+# scripts/check_environment.py
+# G-MASS environment validation script
 #
-# Run this once after cloning the repo to verify your environment is ready.
+# Run this to verify the project environment is ready for use.
 #
 # Usage:
-#   python setup.py
+#   python scripts/check_environment.py
 
 import os
 import sys
 import importlib.util
-
 
 print("\n" + "=" * 60)
 print("  G-MASS Project - Environment Setup Check")
 print("=" * 60 + "\n")
 
 errors = []
-
 
 print("Checking Python version...")
 major, minor = sys.version_info.major, sys.version_info.minor
@@ -26,7 +24,6 @@ else:
     print(f"  FAIL Python {major}.{minor} - Need Python 3.10 or higher")
     print("    Download from: python.org\n")
     errors.append("Python version too old")
-
 
 print("Checking installed packages...")
 packages = {
@@ -51,11 +48,13 @@ for pkg, install_cmd in packages.items():
 
 print()
 
-
 print("Checking .env file...")
 if not os.path.exists(".env"):
     print("  FAIL .env file not found in current directory")
-    print("    Create it by copying .env.example to .env, then fill in your API keys.\n")
+    if os.path.exists(".env.example"):
+        print("    Create it by running setup.sh or copying .env.example to .env and filling in your API keys.\n")
+    else:
+        print("    Create .env from your own environment or add .env.example to the repo.\n")
     errors.append(".env file missing")
 else:
     from dotenv import load_dotenv
@@ -70,8 +69,8 @@ else:
 
     for key, source in keys.items():
         value = os.getenv(key)
-        if not value or "your_" in value.lower():
-            print(f"  FAIL {key} - not set")
+        if not value or "your_" in value.lower() or value.strip() == "":
+            print(f"  FAIL {key} - not set or is a placeholder")
             print(f"    Get it from: {source}")
             errors.append(f"Missing key: {key}")
         else:
@@ -99,9 +98,8 @@ else:
                 errors.append(f"Missing local package: {pkg}")
         print()
 
-
 print("Checking folder structure...")
-folders = ["models", "scorer", "probes", "outputs", "tests"]
+folders = ["models", "scorer", "probes", "outputs", "tests", "configs"]
 for folder in folders:
     if os.path.isdir(folder):
         print(f"  OK {folder}/")
@@ -110,7 +108,6 @@ for folder in folders:
         print(f"  OK {folder}/ - created")
 
 print()
-
 
 print("=" * 60)
 if not errors:

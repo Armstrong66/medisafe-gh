@@ -1,13 +1,13 @@
-﻿# models/router.py
-# MediSafe-GH Â· G-MASS Project
-# Team D â€” Engineering Lead
+# models/router.py
+# MediSafe-GH · G-MASS Project
+# Team D -- Engineering Lead
 #
 # Unified model router for all 5 evaluation models.
-# - LLaMA 3.2 3B  â†’ HuggingFace Inference Router (router.huggingface.co/v1)
-# - Phi-3 Mini    â†’ HuggingFace Inference Router (router.huggingface.co/v1)
-# - BioMistral    â†’ HuggingFace Inference Router (router.huggingface.co/v1)
-# - GPT-4o        â†’ OpenAI API
-# - Gemini        â†’ Google GenAI API (new SDK)
+# - LLaMA 3.2 3B  -> HuggingFace Inference Router (router.huggingface.co/v1)
+# - Phi-3 Mini    -> HuggingFace Inference Router (router.huggingface.co/v1)
+# - BioMistral    -> HuggingFace Inference Router (router.huggingface.co/v1)
+# - GPT-4o        -> OpenAI API
+# - Gemini        -> Google GenAI API (new SDK)
 #
 # Usage:
 #   from models.router import call_model
@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# â”€â”€ API credentials â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -- API credentials ------------------------------------------------------------
 HF_TOKEN   = os.getenv("HF_TOKEN")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
@@ -65,7 +65,7 @@ BIOMISTRAL_LOCAL_MODEL = os.getenv("BIOMISTRAL_LOCAL_MODEL", BIOMISTRAL_MODEL)
 _TRANSFORMERS_CACHE = {}
 
 
-# â”€â”€ Language-consistency instruction (clarifications Â§8) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -- Language-consistency instruction (clarifications §8) ----------------------
 # Frontier models often default to English even when prompted in Twi.
 # Appending this instruction forces language-consistent responses where the
 # model is capable of complying, and surfaces non-compliance as a documented
@@ -93,7 +93,7 @@ _LANGUAGES_REQUIRING_INSTRUCTION = {"twi", "ghanaian_en"}
 
 def build_prompt_with_language_instruction(prompt: str, language: str = "english") -> str:
     """
-    Append the Â§8 language-consistency instruction for non-English probes.
+    Append the §8 language-consistency instruction for non-English probes.
     No-op for English. Call this BEFORE passing a prompt to call_model()
     when evaluating Twi or Ghanaian English conditions.
 
@@ -134,16 +134,16 @@ def clean_model_response(text: str) -> str:
     return cleaned.strip()
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-# HUGGINGFACE INFERENCE ROUTER  (LLaMA Â· Phi-3 Â· BioMistral)
+# ------------------------------------------------------------------------------
+# HUGGINGFACE INFERENCE ROUTER  (LLaMA · Phi-3 · BioMistral)
 # Endpoint: https://router.huggingface.co/v1  (OpenAI-compatible)
-# No local downloads â€” models run on HuggingFace servers
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# No local downloads -- models run on HuggingFace servers
+# ------------------------------------------------------------------------------
 
 def call_hf_model(model_id: str, prompt: str) -> str:
     """
     Calls HuggingFace's Inference Router using the OpenAI-compatible API.
-    No local download needed â€” model runs on HuggingFace servers.
+    No local download needed -- model runs on HuggingFace servers.
 
     Args:
         model_id : full HuggingFace model ID e.g. "meta-llama/Llama-3.2-3B-Instruct"
@@ -155,7 +155,7 @@ def call_hf_model(model_id: str, prompt: str) -> str:
     if not HF_TOKEN:
         raise EnvironmentError(
             "HF_TOKEN is missing. Add it to your .env file.\n"
-            "Get one at: huggingface.co â†’ Settings â†’ Access Tokens"
+            "Get one at: huggingface.co -> Settings -> Access Tokens"
         )
 
     from openai import OpenAI
@@ -224,13 +224,13 @@ def _is_retryable_hf_error(error: Exception) -> bool:
     return any(marker in message for marker in retryable_markers)
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-# LOCAL OPEN-WEIGHT MODELS  (Phi-3 Â· BioMistral)
+# ------------------------------------------------------------------------------
+# LOCAL OPEN-WEIGHT MODELS  (Phi-3 · BioMistral)
 # Supports:
-# - hf_router      â†’ Hugging Face Inference Router
-# - local_openai   â†’ local OpenAI-compatible server such as vLLM
-# - transformers   â†’ direct local transformers loading
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# - hf_router      -> Hugging Face Inference Router
+# - local_openai   -> local OpenAI-compatible server such as vLLM
+# - transformers   -> direct local transformers loading
+# ------------------------------------------------------------------------------
 
 def call_open_weight_model(
     backend: str,
@@ -487,7 +487,7 @@ def _resolve_torch_dtype(torch, dtype_name: str):
     )
 
 
-# â”€â”€ Individual HF model wrappers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# -- Individual HF model wrappers ----------------------------------------------
 
 def call_phi3(prompt: str) -> str:
     """Phi-3 Mini 4K Instruct via the configured open-weight backend."""
@@ -511,20 +511,20 @@ def call_biomistral(prompt: str) -> str:
     )
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-# OPENAI API  (GPT-4o â€” reinstated per explicit team decision, overriding Â§9)
+# ------------------------------------------------------------------------------
+# OPENAI API  (GPT-4o -- reinstated per explicit team decision, overriding §9)
 #
-# Â§9 of GMASS_Team_Clarifications.md recommended GPT-4o mini (94% cheaper,
+# §9 of GMASS_Team_Clarifications.md recommended GPT-4o mini (94% cheaper,
 # comparable safety-classification performance, ~$5 total for all 1,800
 # proprietary calls). The team explicitly chose to reinstate full GPT-4o
 # instead, to match the original 5-model lineup. Cost impact: full GPT-4o is
-# significantly more per-token than GPT-4o mini â€” budget accordingly for the
+# significantly more per-token than GPT-4o mini -- budget accordingly for the
 # 900 GPT-4o calls in a full run; confirm against current OpenAI pricing
 # before a production run, as mini's <$5 estimate no longer applies.
 #
 # To switch back to mini without code changes, set GPT4O_MODEL=gpt-4o-mini
-# in .env â€” the model_id is fully configurable, only the default changed.
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# in .env -- the model_id is fully configurable, only the default changed.
+# ------------------------------------------------------------------------------
 
 GPT4O_MODEL = os.getenv("GPT4O_MODEL", "gpt-4o")
 
@@ -532,13 +532,13 @@ GPT4O_MODEL = os.getenv("GPT4O_MODEL", "gpt-4o")
 def call_gpt4o(prompt: str) -> str:
     """
     GPT-4o via OpenAI API. Reinstated per explicit team decision (see module
-    comment above) â€” overrides clarifications Â§9's GPT-4o mini recommendation.
+    comment above) -- overrides clarifications §9's GPT-4o mini recommendation.
     Requires OPENAI_API_KEY in .env.
     Get key at: platform.openai.com/api-keys
 
     NOTE: function name kept as call_gpt4o / model key kept as "gpt4o" for
     backward compatibility with existing pipeline code, configs, and scored
-    output files. The MODEL_ID actually used is controlled by GPT4O_MODEL â€”
+    output files. The MODEL_ID actually used is controlled by GPT4O_MODEL --
     see constant above and configs/models.yaml.
     """
     if not OPENAI_KEY:
@@ -558,23 +558,23 @@ def call_gpt4o(prompt: str) -> str:
     return clean_model_response(response.choices[0].message.content)
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ------------------------------------------------------------------------------
 # GOOGLE API  (Gemini)
 # Uses new google-genai SDK (google-generativeai is deprecated)
 # Get key at: aistudio.google.com
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ------------------------------------------------------------------------------
 
 def call_gemini(prompt: str) -> str:
     """
     Gemini via Google GenAI API (new SDK).
     Requires GEMINI_API_KEY in .env.
     Free tier: 1,500 requests/day.
-    Get key at: aistudio.google.com â†’ Get API Key
+    Get key at: aistudio.google.com -> Get API Key
     """
     if not GEMINI_KEY:
         raise EnvironmentError(
             "GEMINI_API_KEY is missing. Add it to your .env file.\n"
-            "Get one at: aistudio.google.com â†’ Get API Key"
+            "Get one at: aistudio.google.com -> Get API Key"
         )
 
     from google import genai
@@ -658,9 +658,9 @@ def _is_non_retryable_gemini_quota_error(error: Exception) -> bool:
     return "429" in message and any(marker in message for marker in hard_quota_markers)
 
 
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ------------------------------------------------------------------------------
 # UNIFIED DISPATCHER
-# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+# ------------------------------------------------------------------------------
 
 MODEL_FUNCTIONS = {
     "gpt4o":      call_gpt4o,
