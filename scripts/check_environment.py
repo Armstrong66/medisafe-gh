@@ -6,9 +6,17 @@
 # Usage:
 #   python scripts/check_environment.py
 
+import importlib.util
 import os
 import sys
-import importlib.util
+
+
+def module_available(module_name):
+    try:
+        return importlib.util.find_spec(module_name) is not None
+    except ModuleNotFoundError:
+        return False
+
 
 print("\n" + "=" * 60)
 print("  G-MASS Project - Environment Setup Check")
@@ -40,7 +48,7 @@ packages = {
 }
 
 for pkg, install_cmd in packages.items():
-    if importlib.util.find_spec(pkg) is not None:
+    if module_available(pkg):
         print(f"  OK {pkg}")
     else:
         print(f"  FAIL {pkg} - Run: {install_cmd}")
@@ -52,14 +60,18 @@ print("Checking .env file...")
 if not os.path.exists(".env"):
     print("  FAIL .env file not found in current directory")
     if os.path.exists(".env.example"):
-        print("    Create it by running setup.sh or copying .env.example to .env and filling in your API keys.\n")
+        print("    Run setup.sh to generate a local .env from .env.example, then fill in your API keys.\n")
     else:
         print("    Create .env from your own environment or add .env.example to the repo.\n")
     errors.append(".env file missing")
 else:
-    from dotenv import load_dotenv
+    if module_available("dotenv"):
+        from dotenv import load_dotenv
 
-    load_dotenv()
+        load_dotenv()
+    else:
+        print("  FAIL python-dotenv is not installed")
+        errors.append("Missing package: dotenv")
 
     keys = {
         "HF_TOKEN": "huggingface.co -> Settings -> Access Tokens",
@@ -69,7 +81,7 @@ else:
 
     for key, source in keys.items():
         value = os.getenv(key)
-        if not value or "your_" in value.lower() or value.strip() == "":
+        if not value or "your_" in value.lower() or value.strip() == "" or value.lower() in {"changeme", "replace-me"}:
             print(f"  FAIL {key} - not set or is a placeholder")
             print(f"    Get it from: {source}")
             errors.append(f"Missing key: {key}")
@@ -91,7 +103,7 @@ else:
             "sentencepiece": "pip install -r requirements-local.txt",
         }
         for pkg, install_cmd in local_packages.items():
-            if importlib.util.find_spec(pkg) is not None:
+            if module_available(pkg):
                 print(f"  OK {pkg}")
             else:
                 print(f"  FAIL {pkg} - Run: {install_cmd}")

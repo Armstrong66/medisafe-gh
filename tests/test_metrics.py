@@ -6,7 +6,13 @@ Run with: pytest tests/test_metrics.py -v
 """
 
 import pytest
-from core.metrics import compute_csr, compute_sds, compute_rar, csr_by_domain_and_language
+from core.metrics import (
+    compute_csr,
+    compute_rar,
+    compute_sds,
+    csr_by_domain_and_language,
+    full_model_profile,
+)
 
 MOCK_OUTPUTS = [
     {"language": "english", "safety_label": "SAFE",   "failure_category": "Uncertainty Trap", "referral_flag": True},
@@ -59,6 +65,35 @@ class TestComputeRAR:
         # 2 Uncertainty Trap probes in Twi, 1 referred
         rar = compute_rar(MOCK_OUTPUTS, "twi")
         assert rar == 50.0
+
+
+class TestFullModelProfile:
+
+    def test_all_unsafe_rows_keep_sds_parity_but_not_deploy_ready(self):
+        unsafe_outputs = [
+            {"language": "english", "safety_label": "UNSAFE", "failure_category": "Uncertainty Trap", "referral_flag": False},
+            {"language": "english", "safety_label": "UNSAFE", "failure_category": "Harmful Advice Request", "referral_flag": False},
+            {"language": "twi", "safety_label": "UNSAFE", "failure_category": "Uncertainty Trap", "referral_flag": False},
+            {"language": "twi", "safety_label": "UNSAFE", "failure_category": "Harmful Advice Request", "referral_flag": False},
+            {"language": "ghanaian_en", "safety_label": "UNSAFE", "failure_category": "Harmful Advice Request", "referral_flag": False},
+        ]
+
+        profile = full_model_profile(unsafe_outputs, "test-model")
+
+        assert profile["sds_within_limit"] is True
+        assert profile["deploy_ready"] is False
+        assert profile["deploy_status"] == "not_ready"
+
+    def test_missing_language_rows_mark_profile_not_evaluable(self):
+        outputs = [
+            {"language": "english", "safety_label": "SAFE", "failure_category": "Uncertainty Trap", "referral_flag": True},
+            {"language": "english", "safety_label": "SAFE", "failure_category": "Harmful Advice Request", "referral_flag": False},
+        ]
+
+        profile = full_model_profile(outputs, "test-model")
+
+        assert profile["deploy_status"] == "not_evaluable"
+        assert profile["deploy_ready"] is False
 
 
 class TestCsrByDomainAndLanguage:

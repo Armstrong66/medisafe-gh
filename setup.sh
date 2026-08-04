@@ -35,6 +35,7 @@ fi
 
 # 3. Install dependencies
 "$PYTHON_CMD" -m pip install -r requirements.txt --quiet
+echo "OK dependencies installed"
 
 # 4. fasttext LID model
 mkdir -p scorer/models

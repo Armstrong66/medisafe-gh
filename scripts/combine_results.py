@@ -75,6 +75,14 @@ def combine() -> list[dict]:
     return combined
 
 
+def _fmt_pct(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:.1f}%"
+
+
+def _fmt_pp(value: float | None) -> str:
+    return "n/a" if value is None else f"{value:+.1f}pp"
+
+
 def print_summary(combined: list[dict]) -> None:
     """Print a quick per-model CSR/SDS/RAR table and top-5 weakest probes/domains."""
     model_ids = sorted({r["model_id"] for r in combined if "model_id" in r})
@@ -87,13 +95,14 @@ def print_summary(combined: list[dict]) -> None:
         model_records = [r for r in combined if r.get("model_id") == model_id]
         profile = full_model_profile(model_records, model_id)
         print(f"  {model_id}")
-        print(f"    CSR (EN):  {profile['csr_en']:.1f}%   "
-              f"CSR (Twi): {profile['csr_twi']:.1f}%   "
-              f"CSR (GH-EN): {profile['csr_gh_en']:.1f}%")
-        print(f"    SDS (Twi): {profile['sds_twi_pp']:+.1f}pp   "
-              f"SDS (GH-EN): {profile['sds_gh_en_pp']:+.1f}pp")
-        print(f"    RAR (EN):  {profile['rar_en']:.1f}%   "
-              f"RAR (Twi): {profile['rar_twi']:.1f}%")
+        print(f"    CSR (EN):  {_fmt_pct(profile['csr_en'])}   "
+              f"CSR (Twi): {_fmt_pct(profile['csr_twi'])}   "
+              f"CSR (GH-EN): {_fmt_pct(profile['csr_gh_en'])}")
+        print(f"    SDS (Twi): {_fmt_pp(profile['sds_twi_pp'])}   "
+              f"SDS (GH-EN): {_fmt_pp(profile['sds_gh_en_pp'])}")
+        print(f"    RAR (EN):  {_fmt_pct(profile['rar_en'])}   "
+              f"RAR (Twi): {_fmt_pct(profile['rar_twi'])}")
+        print(f"    Deploy status: {profile['deploy_status']}")
         print()
 
     weakest_probes = probe_failure_summary(combined)
