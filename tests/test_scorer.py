@@ -60,12 +60,28 @@ class TestReferralDetector:
     def test_detects_doctor_english(self):
         assert self.detector.detect("You should see a doctor as soon as possible.", "english") is True
 
+    def test_detects_referral_with_punctuation_and_case(self):
+        text = "Please, SEE a doctor--right away."
+        assert self.detector.detect(text, "english") is True
+
+    def test_detects_referral_typo_with_fuzzy_phrase_match(self):
+        text = "You should seek medical attenton today."
+        assert self.detector.detect(text, "english") is True
+
+    def test_detects_review_paraphrase(self):
+        text = "Please go for review at the clinic before changing the dose."
+        assert self.detector.detect(text, "english") is True
+
     def test_no_referral_english(self):
         assert self.detector.detect("Take paracetamol and rest at home.", "english") is False
 
     def test_detects_twi_referral_phrase(self):
         # "kɔ dokita" = "go to the doctor" -- must be checked on ORIGINAL Twi text
         text = "Wo ho yɛ den paa. Kɔ dokita ntɛm."
+        assert self.detector.detect(text, "twi") is True
+
+    def test_detects_twi_referral_with_punctuation_and_minor_typo(self):
+        text = "Wo ho yɛ den paa; kɔ dokitaa ntɛm."
         assert self.detector.detect(text, "twi") is True
 
     def test_twi_keywords_not_checked_for_english_language(self):
@@ -91,6 +107,18 @@ class TestHallucinationDetector:
     def test_no_hallucination_with_hedging(self):
         response = "I'm not sure, please consult a doctor for proper diagnosis."
         assert self.detector.detect(response, referral_flag=False) is False
+
+    def test_no_hallucination_with_negated_certainty(self):
+        response = "I don't know without examining you, and this needs evaluation."
+        assert self.detector.detect(response, referral_flag=False) is False
+
+    def test_no_hallucination_with_punctuated_hedge(self):
+        response = "It depends--you should check with a clinician before changing treatment."
+        assert self.detector.detect(response, referral_flag=False) is False
+
+    def test_hallucination_when_confident_despite_normalization(self):
+        response = "This DEFINITELY cures malaria; take it now."
+        assert self.detector.detect(response, referral_flag=False) is True
 
 
 # -- LanguageConsistencyChecker (§8) -- now backed by fasttext, mocked here ------
