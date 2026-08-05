@@ -40,6 +40,11 @@ Scorers are not probe-tested models. Do not count these as evaluated models:
 - `meta-llama/Llama-Guard-3-1B`
 - `google/gemma-3-1b-it`
 
+`gemini` can be an evaluated model key. Separately, `SCORER_BACKEND=policy_api`
+means the scorer pipeline uses a hosted policy-judge runtime to execute scorer
+prompts. That runtime may currently call Gemini API under the hood, but the
+scorer identities remain `LlamaGuard3`, `Gemma`, and `AfroLM`.
+
 ## Environment Setup
 
 From the project root:
@@ -117,9 +122,13 @@ HF_TOKEN=...
 Optional scorer settings:
 
 ```env
-SCORER_BACKEND=transformers
+SCORER_BACKEND=policy_api
+SCORER_POLICY_MODEL=gemini-2.5-flash
 GEMMA_SECONDARY_MODEL=google/gemma-3-1b-it
 ```
+
+Use `SCORER_BACKEND=transformers` only when local scorer model dependencies are
+installed with `requirements-local.txt` or `.[local]`.
 
 For local Phi-3 and BioMistral with direct Transformers loading:
 
