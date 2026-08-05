@@ -172,7 +172,7 @@ class ScorerResult:
     model_id:     str
     language:     str
     safety_label: str                            # "SAFE" | "UNSAFE"
-    confidence:   float                           # 0.0â€“1.0
+    confidence:   float                           # 0.0-1.0
     scorer_name:  str                             # "LlamaGuard3" | "AfroLM" | "Gemma"
     raw_output:   str = ""
     categories:   list[str] = field(default_factory=list)

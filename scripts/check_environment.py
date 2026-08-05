@@ -8,7 +8,10 @@
 
 import importlib.util
 import os
+import shutil
+import subprocess
 import sys
+import sysconfig
 
 
 def module_available(module_name):
@@ -44,6 +47,8 @@ packages = {
     "numpy": "pip install -r requirements.txt",
     "fasttext": "pip install -r requirements.txt",
     "openpyxl": "pip install -r requirements.txt",
+    "pandas": "pip install -r requirements.txt",
+    "jsonlines": "pip install -r requirements.txt",
     "pytest": "pip install -r requirements.txt",
 }
 
@@ -54,6 +59,30 @@ for pkg, install_cmd in packages.items():
         print(f"  FAIL {pkg} - Run: {install_cmd}")
         errors.append(f"Missing package: {pkg}")
 
+print()
+
+print("Checking installed G-MASS CLI...")
+scripts_dir = sysconfig.get_path("scripts")
+gmass_exe = "gmass.exe" if os.name == "nt" else "gmass"
+gmass_script = os.path.join(scripts_dir, gmass_exe) if scripts_dir else ""
+gmass_cmd = (gmass_script if gmass_script and os.path.exists(gmass_script) else None) or shutil.which("gmass")
+if gmass_cmd:
+    result = subprocess.run(
+        [gmass_cmd, "--help"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+        timeout=15,
+    )
+    if result.returncode == 0:
+        print("  OK gmass CLI found")
+    else:
+        print("  WARN gmass CLI file found, but its launcher did not run")
+        print("    Fallback: python -m run_bilingual_eval --help")
+        print("    If this virtualenv was copied or moved, recreate it and rerun setup.sh.")
+else:
+    print("  FAIL gmass CLI not found - Run: python -m pip install -e .")
+    errors.append("gmass CLI missing")
 print()
 
 print("Checking .env file...")

@@ -3,6 +3,32 @@ set -euo pipefail
 
 echo "=== G-MASS Setup ==="
 
+INSTALL_LOCAL=false
+INSTALL_DEV=false
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --local)
+      INSTALL_LOCAL=true
+      ;;
+    --dev)
+      INSTALL_DEV=true
+      ;;
+    -h|--help)
+      echo "Usage: ./setup.sh [--local] [--dev]"
+      echo "  --local  install local Transformers backend dependencies"
+      echo "  --dev    install developer/test tooling"
+      exit 0
+      ;;
+    *)
+      echo "FAIL Unknown option: $1"
+      echo "Run ./setup.sh --help for usage."
+      exit 1
+      ;;
+  esac
+  shift
+done
+
 # 1. Python check
 PYTHON_CMD=python3
 if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
@@ -33,9 +59,23 @@ if [ -f .env ] && grep -qE 'your_[A-Za-z0-9_]+|YOUR_[A-Z0-9_]+' .env 2>/dev/null
   echo "WARNING: .env contains placeholder values. Update .env with real keys before use."
 fi
 
-# 3. Install dependencies
+# 3. Install dependencies and editable package
+"$PYTHON_CMD" -m pip install --upgrade pip --quiet
 "$PYTHON_CMD" -m pip install -r requirements.txt --quiet
-echo "OK dependencies installed"
+"$PYTHON_CMD" -m pip install -e . --quiet
+echo "OK base dependencies and editable gmass CLI installed"
+
+if [ "$INSTALL_LOCAL" = true ]; then
+  "$PYTHON_CMD" -m pip install -r requirements-local.txt --quiet
+  echo "OK local Transformers backend dependencies installed"
+else
+  echo "SKIP local Transformers dependencies (run ./setup.sh --local to install them)"
+fi
+
+if [ "$INSTALL_DEV" = true ]; then
+  "$PYTHON_CMD" -m pip install -e ".[dev]" --quiet
+  echo "OK developer dependencies installed"
+fi
 
 # 4. fasttext LID model
 mkdir -p scorer/models
@@ -54,4 +94,4 @@ echo ""
 echo "Next steps:"
 echo "  1. Fill in .env with your API keys if needed"
 echo "  2. $PYTHON_CMD scripts/check_environment.py"
-echo "  3. python run_bilingual_eval.py phi3 --probe-file data/probes/simulation_set_6_probes.jsonl --full"
+echo "  3. gmass phi3 --probe-file data/probes/simulation_set_6_probes.jsonl --full"
