@@ -12,7 +12,7 @@ Date: 2026-08-05
 - Updated `setup.sh` to install the editable package, expose `gmass`, and support explicit `--local` and `--dev` setup modes.
 - Added `setup.ps1` for direct Windows PowerShell setup with matching `-Local` and `-Dev` modes.
 - Made `pyproject.toml` the canonical dependency source; `requirements.txt` and `requirements-local.txt` are now thin compatibility entry points.
-- Changed `.env.example` to default to the lighter Gemini scorer backend so base setup does not require local Transformers packages unless explicitly requested.
+- Changed `.env.example` to default to `SCORER_BACKEND=policy_api`, making clear that Gemini may be the hosted execution runtime while scorer identities remain LlamaGuard3/Gemma/AfroLM.
 - Added Dockerfile and `.dockerignore` for a reproducible base image that keeps credentials runtime-only.
 - Updated README setup, run, smoke-test, and Docker instructions to prefer `gmass`.
 - Updated `scripts/check_environment.py` to validate converter dependencies and the installed `gmass` CLI.
