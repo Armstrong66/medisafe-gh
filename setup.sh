@@ -62,7 +62,6 @@ fi
 # 3. Install dependencies and editable package
 "$PYTHON_CMD" -m pip install --upgrade pip --quiet
 "$PYTHON_CMD" -m pip install -r requirements.txt --quiet
-"$PYTHON_CMD" -m pip install -e . --quiet
 echo "OK base dependencies and editable gmass CLI installed"
 
 if [ "$INSTALL_LOCAL" = true ]; then

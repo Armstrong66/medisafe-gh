@@ -10,6 +10,9 @@ Date: 2026-08-05
 - Added the installable `gmass` console command through `pyproject.toml`.
 - Made `scripts/` installable so packaged runs can still combine results and build reports.
 - Updated `setup.sh` to install the editable package, expose `gmass`, and support explicit `--local` and `--dev` setup modes.
+- Added `setup.ps1` for direct Windows PowerShell setup with matching `-Local` and `-Dev` modes.
+- Made `pyproject.toml` the canonical dependency source; `requirements.txt` and `requirements-local.txt` are now thin compatibility entry points.
+- Changed `.env.example` to default to the lighter Gemini scorer backend so base setup does not require local Transformers packages unless explicitly requested.
 - Added Dockerfile and `.dockerignore` for a reproducible base image that keeps credentials runtime-only.
 - Updated README setup, run, smoke-test, and Docker instructions to prefer `gmass`.
 - Updated `scripts/check_environment.py` to validate converter dependencies and the installed `gmass` CLI.

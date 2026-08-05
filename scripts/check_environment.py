@@ -49,7 +49,6 @@ packages = {
     "openpyxl": "pip install -r requirements.txt",
     "pandas": "pip install -r requirements.txt",
     "jsonlines": "pip install -r requirements.txt",
-    "pytest": "pip install -r requirements.txt",
 }
 
 for pkg, install_cmd in packages.items():

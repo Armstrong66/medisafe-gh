@@ -24,6 +24,7 @@ Current state:
 - `scripts/check_environment.py` validates Python version, package availability, `.env` presence, and obvious placeholder values.
 - `.env.example` is now tracked and provides a contributor-safe starting point.
 - Resolved update, 2026-08-05: `setup.sh` now installs the editable package, exposes the `gmass` CLI, and supports explicit `--local` and `--dev` install modes.
+- Resolved update, 2026-08-05: `setup.ps1` provides the same base/local/dev setup path for direct Windows PowerShell use.
 
 What is working well:
 - Fresh-clone onboarding is much better than before.
@@ -119,6 +120,7 @@ Remaining gaps:
 - `setup.sh` is the main bootstrap path for contributors.
 - Resolved update, 2026-08-05: `setup.py` now delegates to `pyproject.toml`; `pyproject.toml` defines package metadata and a `gmass` entry point.
 - Resolved update, 2026-08-05: `setup.sh` installs the editable package and supports explicit `--local` and `--dev` install modes.
+- Resolved update, 2026-08-05: `requirements.txt` and `requirements-local.txt` are thin compatibility files that point to the canonical `pyproject.toml` dependency sets.
 - Local-model support remains opt-in because those dependencies are heavier and machine-specific.
 - Because there is no lockfile, dependency drift remains possible across machines and CI environments.
 
