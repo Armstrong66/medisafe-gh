@@ -48,8 +48,11 @@ From the project root:
 python -m venv venv
 .\venv\Scripts\activate
 python -m pip install -r requirements.txt
-python -m pip install -e .
 ```
+
+`requirements.txt` is intentionally thin and installs the package from
+`pyproject.toml`. Optional local model dependencies live in
+`requirements-local.txt` / `.[local]`.
 
 For local transformer scorers or local Phi-3/BioMistral backends:
 
@@ -64,10 +67,22 @@ and installs the editable `gmass` CLI:
 ./setup.sh
 ```
 
+On Windows PowerShell:
+
+```powershell
+.\setup.ps1
+```
+
 Install local backend or test tooling during setup with:
 
 ```bash
 ./setup.sh --local --dev
+```
+
+PowerShell equivalent:
+
+```powershell
+.\setup.ps1 -Local -Dev
 ```
 
 If a copied or moved virtual environment gives a stale `pip.exe` launcher error,
@@ -209,6 +224,12 @@ Build a reproducible base image from the project root:
 
 ```powershell
 docker build -t medisafe-gh .
+```
+
+Include local Transformers backend dependencies in the image only when needed:
+
+```powershell
+docker build --build-arg INSTALL_LOCAL=true -t medisafe-gh-local .
 ```
 
 Run the CLI in the container with local credentials supplied at runtime:
