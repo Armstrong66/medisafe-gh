@@ -23,6 +23,7 @@ Current state:
 - `setup.sh` now creates `.env` from `.env.example` when needed, installs base dependencies with `pip`, and downloads the fasttext language-ID model.
 - `scripts/check_environment.py` validates Python version, package availability, `.env` presence, and obvious placeholder values.
 - `.env.example` is now tracked and provides a contributor-safe starting point.
+- Resolved update, 2026-08-05: `setup.sh` now installs the editable package, exposes the `gmass` CLI, and supports explicit `--local` and `--dev` install modes.
 
 What is working well:
 - Fresh-clone onboarding is much better than before.
@@ -30,7 +31,7 @@ What is working well:
 - Placeholder keys are now caught early.
 
 Remaining gaps:
-- `setup.sh` installs `requirements.txt` but does not automatically install `requirements-local.txt`, even though local transformers/backends depend on those packages.
+- Local Transformers dependencies remain opt-in through `./setup.sh --local` because they are heavier and machine-specific.
 - The setup flow does not pin or lock dependencies; it relies on floating package versions.
 - There is no checksum validation for the downloaded `lid.176.ftz` model.
 - There is no CI bootstrap smoke test that verifies the setup script end to end on a clean environment.
@@ -41,13 +42,13 @@ Current state:
 - `run_bilingual_eval.py` is the main CLI entry point and uses `argparse`.
 - It supports `model`, `--probe-file`, `--per-domain`, `--full`, `--delay`, and `--skip-report`.
 - The `all` mode runs each model sequentially and then combines outputs.
+- Resolved update, 2026-08-05: the runner is now import-safe and exposed as the installable `gmass` console command via `pyproject.toml`.
 
 What is working well:
 - The CLI is straightforward and understandable for local use.
 - The `all` flow is convenient for a full run.
 
 Remaining gaps:
-- The tool is a script, not yet a packaged installable CLI with console entry points.
 - There is no explicit resume/replay manifest; reruns depend on the existing JSONL files and deduplication logic.
 - The pipeline has no built-in dry-run mode, no budget cap, and no operation-level timeout policy.
 - The CLI does not clearly separate “pilot”, “full evaluation”, and “report-only” modes in a production-friendly way.
@@ -104,38 +105,39 @@ Remaining gaps:
 ## Current state of CLI, Docker, and package installation
 
 ### CLI behavior
-- The current CLI is script-based and works through `python run_bilingual_eval.py ...`.
-- It is good for local experimentation and small-team usage.
-- It is not yet a polished installation experience for contributors who want a stable command such as `gmass eval` or a packaged wheel/sdist.
+- Resolved update, 2026-08-05: the package now installs a stable `gmass` console command.
+- The script path remains available for local compatibility, but contributor docs now prefer `gmass ...`.
+- Remaining packaging polish would be to split subcommands such as `gmass eval`, `gmass combine`, and `gmass report`; the current command preserves the existing argument contract.
 
 ### Docker / containerization
-- There is currently no Dockerfile, docker-compose file, or container-based deployment path in the repository.
-- That means the repo relies on the host environment and is more vulnerable to OS-level drift, missing system packages, and inconsistent dependency resolution.
-- For a production-like deployment, a container image or a reproducible environment manifest should be added.
+- Resolved update, 2026-08-05: a Dockerfile and `.dockerignore` now provide a reproducible base image for CLI evaluation runs.
+- Credentials remain runtime-only via environment variables or `--env-file .env`; the image does not bake secrets into the build.
+- Remaining production hardening would be to add CI image build/publish and dependency lock validation.
 
 ### Package installation
 - The repository has `requirements.txt`, `requirements-local.txt`, and `pyproject.toml`.
 - `setup.sh` is the main bootstrap path for contributors.
-- `setup.py` is effectively a stub and is not a meaningful packaging entry point yet.
-- Base dependencies are covered, but local-model support still depends on extra packages from `requirements-local.txt` that are not installed automatically by the current bootstrap script.
+- Resolved update, 2026-08-05: `setup.py` now delegates to `pyproject.toml`; `pyproject.toml` defines package metadata and a `gmass` entry point.
+- Resolved update, 2026-08-05: `setup.sh` installs the editable package and supports explicit `--local` and `--dev` install modes.
+- Local-model support remains opt-in because those dependencies are heavier and machine-specific.
 - Because there is no lockfile, dependency drift remains possible across machines and CI environments.
 
 ## Recommended next steps (priority order)
 
 High priority:
-1. Add a reproducible container or environment image for the eval pipeline.
-2. Add a lockfile and a CI smoke test that runs the bootstrap path and a minimal eval path.
-3. Make local backends and cloud backends install and validate through the same preflight path.
-4. Add a run manifest with config/model/dependency fingerprints for every evaluation batch.
+1. Add a lockfile and a CI smoke test that runs the bootstrap path and a minimal eval path.
+2. Add run manifests with config/model/dependency fingerprints for every evaluation batch.
+3. Make local backends and cloud backends install and validate through the same provider-aware preflight path.
+4. Add dependency/image checksum validation for downloaded or built artifacts.
 
 Medium priority:
 5. Add explicit provider budget controls (timeouts, retries, max spend, fail-fast policy).
 6. Add a stronger artifact integrity workflow (checksums, manifest, immutable outputs).
-7. Package the CLI properly so it can be installed and invoked in a standard way.
+7. Split the installed CLI into clearer subcommands if the command surface grows.
 
 ## Bottom line
 
-This repo now has a solid foundation for a pilot-grade safety evaluation workflow. It is not yet fully hardened for production-grade deployment, but the remaining work is concentrated and actionable: reproducibility, containerization, package/install automation, and run-governance.
+This repo now has a solid foundation for a pilot-grade safety evaluation workflow. It is not yet fully hardened for production-grade deployment, but the remaining work is now concentrated around lockfiles, CI smoke tests, run manifests, artifact integrity, and provider governance.
 
 This review should be treated as a contributor-facing checkpoint rather than a final release gate. The most important next move is to make the environment and execution path reproducible before scaling the evaluation workload.
 
@@ -200,6 +202,6 @@ Immediate action items (data ingestion):
 - The above limitations and recommended actions will be added to this review document and to plan.md. Add todos to the session DB to track the following prioritized work items:
   - Expand and harden hallucination/referral detectors (short-term + medium-term classifier plan).
   - Implement CSV/XLSX → JSONL converter and tests.
-  - Add CI smoke test for setup.sh and a reproducible container image (Dockerfile) plan.
+  - Add CI smoke test for setup.sh, package installation, and the Docker image build.
 
 

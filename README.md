@@ -18,7 +18,7 @@ helpfulness or factuality.
 The active entry point is:
 
 ```powershell
-python run_bilingual_eval.py ...
+gmass ...
 ```
 
 ## Probe-Tested Models
@@ -48,12 +48,26 @@ From the project root:
 python -m venv venv
 .\venv\Scripts\activate
 python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 For local transformer scorers or local Phi-3/BioMistral backends:
 
 ```powershell
 python -m pip install -r requirements-local.txt
+```
+
+On macOS/Linux or Git Bash, the bootstrap script performs the same base setup
+and installs the editable `gmass` CLI:
+
+```bash
+./setup.sh
+```
+
+Install local backend or test tooling during setup with:
+
+```bash
+./setup.sh --local --dev
 ```
 
 If a copied or moved virtual environment gives a stale `pip.exe` launcher error,
@@ -67,6 +81,12 @@ Check the environment:
 
 ```powershell
 python scripts/check_environment.py
+```
+
+Check the installed CLI:
+
+```powershell
+gmass --help
 ```
 
 ## Environment Variables
@@ -141,19 +161,19 @@ for scorer context, even when the model is queried in Twi or GH-EN.
 Pilot mode, default 5 probes per disease domain:
 
 ```powershell
-python run_bilingual_eval.py gemini --per-domain 5
+gmass gemini --per-domain 5
 ```
 
 Run the 6-probe simulation set for one model:
 
 ```powershell
-python run_bilingual_eval.py phi3 --probe-file data/probes/simulation_set_6_probes.jsonl --full
+gmass phi3 --probe-file data/probes/simulation_set_6_probes.jsonl --full
 ```
 
 Run the full default probe set for one model:
 
 ```powershell
-python run_bilingual_eval.py gemini --full
+gmass gemini --full
 ```
 
 Available model keys:
@@ -168,19 +188,39 @@ Run all 4 probe-tested models in pilot mode, then automatically combine results
 and build the workbook report:
 
 ```powershell
-python run_bilingual_eval.py all --per-domain 5
+gmass all --per-domain 5
 ```
 
 Run all 4 models on the 6-probe simulation set:
 
 ```powershell
-python run_bilingual_eval.py all --probe-file data/probes/simulation_set_6_probes.jsonl --full
+gmass all --probe-file data/probes/simulation_set_6_probes.jsonl --full
 ```
 
 Run all models but skip automatic report generation:
 
 ```powershell
-python run_bilingual_eval.py all --per-domain 5 --skip-report
+gmass all --per-domain 5 --skip-report
+```
+
+## Docker
+
+Build a reproducible base image from the project root:
+
+```powershell
+docker build -t medisafe-gh .
+```
+
+Run the CLI in the container with local credentials supplied at runtime:
+
+```powershell
+docker run --rm --env-file .env -v ${PWD}/data/eval_outputs:/app/data/eval_outputs medisafe-gh --help
+```
+
+Example pilot run:
+
+```powershell
+docker run --rm --env-file .env -v ${PWD}/data/eval_outputs:/app/data/eval_outputs medisafe-gh gemini --per-domain 3
 ```
 
 ## Output Files
@@ -287,7 +327,8 @@ Use this as a quick reproducibility smoke test:
 ```powershell
 .\venv\Scripts\activate
 python -m pip install -r requirements.txt
-python run_bilingual_eval.py gemini --per-domain 3
+python -m pip install -e .
+gmass gemini --per-domain 3
 ```
 
 Expected behavior:
@@ -301,7 +342,7 @@ Expected behavior:
 For the full 4-model reproducible pilot and report:
 
 ```powershell
-python run_bilingual_eval.py all --per-domain 3
+gmass all --per-domain 3
 ```
 
 ## Licence
