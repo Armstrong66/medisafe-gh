@@ -52,7 +52,7 @@ Homepage = "https://github.com/[username]/medisafe-gh"
 "HuggingFace Dataset" = "https://huggingface.co/datasets/[username]/gmass-probe-set"
 
 [tool.setuptools]
-py-modules = ["run_bilingual_eval", "run_pilot", "test_classifiers", "test_models"]
+py-modules = ["run_bilingual_eval"]
 
 [tool.setuptools.packages.find]
 where = ["."]

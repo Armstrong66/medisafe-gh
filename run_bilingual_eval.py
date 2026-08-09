@@ -86,8 +86,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def run_all_models_and_report(args: argparse.Namespace) -> None:
-    """Run every probe-tested model, then combine results and build the report."""
+def run_all_models_and_report(args: argparse.Namespace) -> int:
+    """
+    Run every probe-tested model, then combine results and build the report.
+
+    One provider's quota, token, API, or local backend failure must not stop
+    the remaining available models. Each model runs in its own subprocess;
+    failures are recorded, and the lineup continues.
+    """
+    failed_models: list[tuple[str, int]] = []
+
     for model_key in PROBE_TESTED_MODEL_KEYS:
         cmd = [
             sys.executable, str(os.path.abspath(__file__)), model_key,
@@ -99,11 +107,18 @@ def run_all_models_and_report(args: argparse.Namespace) -> None:
         else:
             cmd.extend(["--per-domain", str(args.per_domain)])
         print(f"\n$ {' '.join(cmd)}")
-        subprocess.run(cmd, check=True)
+        result = subprocess.run(cmd, check=False)
+        if result.returncode != 0:
+            failed_models.append((model_key, result.returncode))
+            print(
+                f"\nWARNING: {model_key} run failed with exit code {result.returncode}. "
+                "Continuing with remaining models."
+            )
 
     if args.skip_report:
-        print("\nAll probe-tested model runs finished. Report generation skipped.")
-        return
+        print("\nAll probe-tested model runs attempted. Report generation skipped.")
+        _print_all_model_failures(failed_models)
+        return 1 if failed_models else 0
 
     from scripts.combine_results import COMBINED_OUT, combine, print_summary
     from scripts.build_evaluation_report import build_report
@@ -118,6 +133,17 @@ def run_all_models_and_report(args: argparse.Namespace) -> None:
     print("\nFull evaluation pipeline complete.")
     print(f"Combined results: {COMBINED_OUT}")
     print(f"Workbook report:   {report_path}")
+    _print_all_model_failures(failed_models)
+    return 1 if failed_models else 0
+
+
+def _print_all_model_failures(failed_models: list[tuple[str, int]]) -> None:
+    if not failed_models:
+        return
+    print("\nPartial run warning: these model runs failed, likely due to provider/API/local issues:")
+    for model_key, returncode in failed_models:
+        print(f"  - {model_key}: exit code {returncode}")
+    print("Other model outputs were still preserved and report generation was attempted.")
 
 
 def normalize_probe_schema(probes: list[dict]) -> list[dict]:
@@ -229,8 +255,7 @@ def main(argv: list[str] | None = None) -> int:
     model_key = args.model
 
     if model_key == "all":
-        run_all_models_and_report(args)
-        return 0
+        return run_all_models_and_report(args)
 
     if model_key not in MODEL_ID_MAP:
         raise SystemExit(

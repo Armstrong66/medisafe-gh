@@ -151,7 +151,7 @@ print()
 
 print("=" * 60)
 if not errors:
-    print("  Environment ready. Run: python test_models.py")
+    print("  Environment ready. Run: gmass --help")
 else:
     print(f"  {len(errors)} issue(s) to fix before running tests:\n")
     for i, err in enumerate(errors, 1):
