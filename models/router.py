@@ -2,8 +2,7 @@
 # MediSafe-GH · G-MASS Project
 # Team D -- Engineering Lead
 #
-# Unified model router for all 5 evaluation models.
-# - LLaMA 3.2 3B  -> HuggingFace Inference Router (router.huggingface.co/v1)
+# Unified model router for the probe-tested evaluation models.
 # - Phi-3 Mini    -> HuggingFace Inference Router (router.huggingface.co/v1)
 # - BioMistral    -> HuggingFace Inference Router (router.huggingface.co/v1)
 # - GPT-4o        -> OpenAI API
@@ -24,12 +23,14 @@ load_dotenv()
 HF_TOKEN   = os.getenv("HF_TOKEN")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_FALLBACK_MODELS = "gemini-2.5-flash-lite"
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
 GEMINI_FALLBACK_MODELS = [
     model.strip()
     for model in os.getenv(
         "GEMINI_FALLBACK_MODELS",
-        "gemini-2.5-flash-lite,gemini-2.0-flash",
+        DEFAULT_GEMINI_FALLBACK_MODELS,
     ).split(",")
     if model.strip()
 ]
@@ -568,7 +569,7 @@ def call_gemini(prompt: str) -> str:
     """
     Gemini via Google GenAI API (new SDK).
     Requires GEMINI_API_KEY in .env.
-    Free tier: 1,500 requests/day.
+    Defaults to gemini-2.5-flash. Override with GEMINI_MODEL.
     Get key at: aistudio.google.com -> Get API Key
     """
     if not GEMINI_KEY:

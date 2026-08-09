@@ -10,12 +10,12 @@ models:
     api_env_var: OPENAI_API_KEY
     notes: "Reinstated full GPT-4o per explicit team decision, overriding GMASS_Team_Clarifications.md §9's GPT-4o mini recommendation. Override via GPT4O_MODEL env var (e.g. set to gpt-4o-mini to revert to the §9 cost-saving option)."
 
-  - id: gemini-1.5-flash
+  - id: gemini-2.5-flash
     key: gemini
     provider: google
     local: false
     api_env_var: GEMINI_API_KEY
-    notes: "Reinstated per team decision to match the original 5-model lineup. Override via GEMINI_MODEL env var."
+    notes: "Gemini Flash evaluation target. Gemini 1.5 is no longer listed in current Gemini API deprecation tables; override via GEMINI_MODEL env var if you need a newer Gemini Flash model."
 
   - id: microsoft/Phi-3-mini-4k-instruct
     key: phi3

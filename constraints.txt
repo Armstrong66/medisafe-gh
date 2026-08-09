@@ -1,0 +1,37 @@
+# Pinned constraints for reproducible contributor, CI, Docker, and app installs.
+# Install with: python -m pip install -r requirements.txt -c constraints.txt
+#
+# Keep pyproject.toml as the canonical dependency declaration. This file pins
+# currently tested versions across the base, local, app, and smoke-test surfaces.
+
+openai==2.44.0
+google-genai==2.10.0
+huggingface_hub==0.36.2
+requests==2.34.2
+python-dotenv==1.2.2
+PyYAML==6.0.3
+numpy==1.26.4
+fasttext-wheel==0.9.2
+openpyxl==3.1.5
+pandas==2.2.3
+datasets==2.20.0
+jsonlines==4.0.0
+scikit-learn==1.5.1
+tqdm==4.66.4
+rich==13.7.1
+jinja2==3.1.4
+
+# Optional local/open-weight backend dependencies.
+torch==2.3.1
+transformers==4.57.6
+accelerate==0.31.0
+safetensors==0.8.0
+sentencepiece==0.2.1
+
+# Optional Gradio app dependencies.
+gradio==5.23.1
+plotly==5.22.0
+
+# CI/dev smoke-test tooling.
+pytest==9.1.1
+ruff==0.16.2

@@ -28,7 +28,7 @@ The pipeline currently evaluates these 4 probe-tested models:
 | Key | Model ID | Provider/backend |
 |---|---|---|
 | `gpt4o` | `gpt-4o` | OpenAI |
-| `gemini` | `gemini-1.5-flash` by default, overrideable with `GEMINI_MODEL` | Google GenAI |
+| `gemini` | `gemini-2.5-flash` by default, overrideable with `GEMINI_MODEL` | Google GenAI |
 | `phi3` | `microsoft/Phi-3-mini-4k-instruct` | Local `transformers`, local OpenAI-compatible server, or HF router |
 | `biomistral` | `BioMistral/BioMistral-7B-SLERP` | Local `transformers`, local OpenAI-compatible server, or HF router |
 
@@ -45,6 +45,12 @@ means the scorer pipeline uses a hosted policy-judge runtime to execute scorer
 prompts. That runtime may currently call Gemini API under the hood, but the
 scorer identities remain `LlamaGuard3`, `Gemma`, and `AfroLM`.
 
+The `gemini` key is a stable pipeline key for a Gemini Flash model, not a claim
+that the historical `gemini-1.5-flash` endpoint is still available. Current
+defaults use `gemini-2.5-flash`.
+
+For extension notes, see `docs/model-and-scorer-extensibility.md`.
+
 ## Environment Setup
 
 From the project root:
@@ -59,6 +65,13 @@ python -m pip install -r requirements.txt
 `pyproject.toml`. Optional local model dependencies live in
 `requirements-local.txt` / `.[local]`. The Gradio/Plotly UI dependencies live
 in `requirements-app.txt` / `.[app]`.
+
+`constraints.txt` pins the versions used by setup, Docker, and CI. Use it when
+you want reproducible installs:
+
+```powershell
+python -m pip install -r requirements.txt -c constraints.txt
+```
 
 For local transformer scorers or local Phi-3/BioMistral backends:
 
@@ -326,6 +339,13 @@ Use Python module invocation:
 
 ```powershell
 .\venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If the installed `gmass.exe` console launcher points at an old copied or moved
+Python path, use the module entry point or recreate the virtual environment:
+
+```powershell
+.\venv\Scripts\python.exe -m run_bilingual_eval --help
 ```
 
 ### Hugging Face router model is not supported
