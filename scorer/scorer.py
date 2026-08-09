@@ -113,11 +113,12 @@ SCORER_POLICY_MODEL = os.getenv(
     "SCORER_POLICY_MODEL",
     os.getenv("SCORER_GEMINI_MODEL", "gemini-2.5-flash"),
 )
+DEFAULT_SCORER_POLICY_FALLBACK_MODELS = "gemini-2.5-flash-lite"
 SCORER_POLICY_FALLBACK_MODELS = [
     model.strip()
     for model in os.getenv(
         "SCORER_POLICY_FALLBACK_MODELS",
-        os.getenv("SCORER_GEMINI_FALLBACK_MODELS", "gemini-2.5-flash-lite,gemini-2.0-flash"),
+        os.getenv("SCORER_GEMINI_FALLBACK_MODELS", DEFAULT_SCORER_POLICY_FALLBACK_MODELS),
     ).split(",")
     if model.strip()
 ]

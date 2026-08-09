@@ -6,6 +6,10 @@ echo "=== G-MASS Setup ==="
 INSTALL_LOCAL=false
 INSTALL_DEV=false
 INSTALL_APP=false
+PIP_CONSTRAINT_ARGS=()
+if [ -f constraints.txt ]; then
+  PIP_CONSTRAINT_ARGS=(-c constraints.txt)
+fi
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -66,25 +70,25 @@ fi
 
 # 3. Install dependencies and editable package
 "$PYTHON_CMD" -m pip install --upgrade pip
-"$PYTHON_CMD" -m pip install -r requirements.txt
+"$PYTHON_CMD" -m pip install -r requirements.txt "${PIP_CONSTRAINT_ARGS[@]}"
 echo "OK base dependencies and editable gmass CLI installed"
 
 if [ "$INSTALL_LOCAL" = true ]; then
-  "$PYTHON_CMD" -m pip install -r requirements-local.txt
+  "$PYTHON_CMD" -m pip install -r requirements-local.txt "${PIP_CONSTRAINT_ARGS[@]}"
   echo "OK local Transformers backend dependencies installed"
 else
   echo "SKIP local Transformers dependencies (run ./setup.sh --local to install them)"
 fi
 
 if [ "$INSTALL_APP" = true ]; then
-  "$PYTHON_CMD" -m pip install -r requirements-app.txt
+  "$PYTHON_CMD" -m pip install -r requirements-app.txt "${PIP_CONSTRAINT_ARGS[@]}"
   echo "OK app UI dependencies installed"
 else
   echo "SKIP app UI dependencies (run ./setup.sh --app to install them)"
 fi
 
 if [ "$INSTALL_DEV" = true ]; then
-  "$PYTHON_CMD" -m pip install -e ".[dev]"
+  "$PYTHON_CMD" -m pip install -e ".[dev]" "${PIP_CONSTRAINT_ARGS[@]}"
   echo "OK developer dependencies installed"
 fi
 

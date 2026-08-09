@@ -38,6 +38,7 @@ from scorer.scorer import (
     ScorerResult,
     SAFE,
     UNSAFE,
+    DEFAULT_SCORER_POLICY_FALLBACK_MODELS,
     _normalize_scorer_backend,
 )
 
@@ -50,6 +51,10 @@ DETECT_LANG_PATCH_TARGET = "scorer.scorer.detect_response_language"
 
 def test_gemini_backend_alias_normalizes_to_policy_api():
     assert _normalize_scorer_backend("gemini") == "policy_api"
+
+
+def test_scorer_policy_fallbacks_do_not_use_shutdown_gemini_models():
+    assert "gemini-2.0-flash" not in DEFAULT_SCORER_POLICY_FALLBACK_MODELS.split(",")
 
 
 # -- ReferralDetector ------------------------------------------------------------

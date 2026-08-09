@@ -1,0 +1,83 @@
+name: Smoke
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux-setup-app:
+    name: Linux setup.sh --app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Run Bash setup with app dependencies
+        run: bash setup.sh --app
+
+      - name: Check CLI
+        run: gmass --help
+
+      - name: Check app import
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "app")
+          import gmass_app
+
+          assert gmass_app.GMASS_AVAILABLE, gmass_app.IMPORT_ERROR
+          print(type(gmass_app.demo).__name__)
+          PY
+
+      - name: Check dependency consistency
+        run: python -m pip check
+
+  windows-setup-app:
+    name: Windows setup.ps1 -App
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Run PowerShell setup with app dependencies
+        shell: pwsh
+        run: .\setup.ps1 -App
+
+      - name: Check CLI
+        shell: pwsh
+        run: gmass --help
+
+      - name: Check app import
+        shell: pwsh
+        run: |
+          python -c "import sys; sys.path.insert(0, 'app'); import gmass_app; assert gmass_app.GMASS_AVAILABLE, gmass_app.IMPORT_ERROR; print(type(gmass_app.demo).__name__)"
+
+      - name: Check dependency consistency
+        shell: pwsh
+        run: python -m pip check
+
+  docker-build:
+    name: Docker build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build CLI image
+        run: docker build -t medisafe-gh-smoke .

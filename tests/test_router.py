@@ -1,4 +1,17 @@
-from models.router import _is_retryable_gemini_error, build_prompt_with_language_instruction
+from models.router import (
+    DEFAULT_GEMINI_FALLBACK_MODELS,
+    DEFAULT_GEMINI_MODEL,
+    _is_retryable_gemini_error,
+    build_prompt_with_language_instruction,
+)
+
+
+def test_gemini_defaults_use_current_flash_target():
+    default_fallbacks = DEFAULT_GEMINI_FALLBACK_MODELS.split(",")
+
+    assert DEFAULT_GEMINI_MODEL == "gemini-2.5-flash"
+    assert "gemini-1.5-flash" not in [DEFAULT_GEMINI_MODEL, *default_fallbacks]
+    assert "gemini-2.0-flash" not in default_fallbacks
 
 
 class TestGeminiRetryClassification:

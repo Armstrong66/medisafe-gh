@@ -55,26 +55,31 @@ if (Test-Path ".env") {
     }
 }
 
+$constraintArgs = @()
+if (Test-Path "constraints.txt") {
+    $constraintArgs = @("-c", "constraints.txt")
+}
+
 & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "--upgrade", "pip"))
-& $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements.txt"))
+& $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements.txt") + $constraintArgs)
 Write-Host "OK base dependencies and editable gmass CLI installed"
 
 if ($Local) {
-    & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements-local.txt"))
+    & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements-local.txt") + $constraintArgs)
     Write-Host "OK local Transformers backend dependencies installed"
 } else {
     Write-Host "SKIP local Transformers dependencies (run .\setup.ps1 -Local to install them)"
 }
 
 if ($App) {
-    & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements-app.txt"))
+    & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements-app.txt") + $constraintArgs)
     Write-Host "OK app UI dependencies installed"
 } else {
     Write-Host "SKIP app UI dependencies (run .\setup.ps1 -App to install them)"
 }
 
 if ($Dev) {
-    & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-e", ".[dev]"))
+    & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-e", ".[dev]") + $constraintArgs)
     Write-Host "OK developer dependencies installed"
 }
 

@@ -57,7 +57,7 @@ LANGUAGES = {
 
 MODEL_OPTIONS = {
     f"GPT-4o ({GPT4O_MODEL if GMASS_AVAILABLE else 'gpt-4o'})": "gpt4o",
-    f"Gemini ({GEMINI_MODEL if GMASS_AVAILABLE else 'gemini-1.5-flash'})": "gemini",
+    f"Gemini Flash ({GEMINI_MODEL if GMASS_AVAILABLE else 'gemini-2.5-flash'})": "gemini",
     f"Phi-3 Mini ({PHI3_MODEL if GMASS_AVAILABLE else 'microsoft/Phi-3-mini-4k-instruct'})": "phi3",
     f"BioMistral ({BIOMISTRAL_MODEL if GMASS_AVAILABLE else 'BioMistral/BioMistral-7B-SLERP'})": "biomistral",
 }
