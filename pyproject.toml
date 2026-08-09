@@ -13,7 +13,7 @@ keywords = ["ai-safety", "medical-ai", "ghana", "twi", "llm-evaluation", "g-mass
 authors = [{ name = "MediSafe-GH Team" }]
 dependencies = [
   "openai>=1.30.0",
-  "google-genai>=1.0.0",
+  "google-genai==2.10.0",
   "huggingface_hub>=0.23.0",
   "requests>=2.31.0",
   "python-dotenv>=1.0.0",
@@ -37,6 +37,10 @@ local = [
   "accelerate==0.31.0",
   "safetensors>=0.4.3",
   "sentencepiece>=0.2.0",
+]
+app = [
+  "gradio==5.23.1",
+  "plotly==5.22.0",
 ]
 dev = ["pytest>=8.2", "black>=24.4", "ruff>=0.5"]
 
