@@ -53,14 +53,20 @@ Never commit secrets into the Space repo.
 
 1. Commit and push the main `medisafe-gh` repository changes.
 2. Create or clone the Hugging Face Space repository.
-3. Copy these files from `app/` into the root of the Space repo:
+3. Prepare the deployment bundle from the main repo:
+
+   ```powershell
+   python scripts/prepare_hf_space.py
+   ```
+
+4. Copy or push the contents of `dist/hf_space/` into the root of the Space repo.
+   The bundle contains:
    - `app.py`
    - `gmass_app.py`
-   - `spaces_README.md` as `README.md`
-   - `spaces_requirements.txt` as `requirements.txt`
-4. Copy the main repo `configs/` directory into the Space repo so `core.config`
-   loads explicit thresholds instead of fallback defaults.
-5. Optionally copy `data/eval_outputs/combined/all_models_scored.jsonl` if the
+   - `README.md`
+   - `requirements.txt`
+   - `configs/`
+5. Optionally run `python scripts/prepare_hf_space.py --include-results` if the
    Benchmark Results tab should show precomputed real results.
 6. Configure Space secrets listed above.
 7. Set `SCORER_BACKEND=policy_api` for the public CPU Space unless running a GPU/local-scorer tier.
@@ -75,5 +81,12 @@ Never commit secrets into the Space repo.
 
 - The public CPU Space should not run full high-volume production batches without provider budget caps.
 - Run manifests and artifact checksums are still needed for audit-grade evaluation runs.
-- CI should test the Space import path and `demo` construction.
+- CI tests the Space import path and `demo` construction.
 - If actual local LlamaGuard3/Gemma/AfroLM weights are required in production, deploy a separate GPU Space or container with `.[local]` installed and `SCORER_BACKEND=transformers`.
+
+## Dependency Decision
+
+The public Gradio Space should install only the base package plus app
+dependencies. It should not install `.[local]` by default, because local
+Transformers dependencies are large, machine-specific, and unnecessary for
+cloud/API-backed pilot testing.

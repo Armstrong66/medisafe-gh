@@ -25,10 +25,11 @@ Date: 2026-08-05
 - Fixed a mojibake artifact in the Hugging Face Space metadata and aligned the Space Gradio version with the tested app dependency.
 - Replaced stale Gemini 1.5 defaults with `gemini-2.5-flash` and kept `gemini` as the stable evaluated-model key for Gemini Flash.
 - Added model/scorer extensibility notes documenting which replacements are config-only and which still require code changes.
+- Added a repeatable Hugging Face Space bundle builder and documented the Gradio deployment path.
+- Reduced the packaged Python surface to the active `run_bilingual_eval`/`gmass` entry point; legacy exploratory root scripts remain in-repo but are not installed as package modules.
+- Hardened `gmass all` so an API/quota/token/backend failure in one model run does not stop the remaining available models; partial failures are reported after all possible runs finish.
 
 ## Remaining
 
-- Add a lockfile or fully pinned constraints file for dependency drift control.
-- Add CI smoke tests for `./setup.sh`, `gmass --help`, and a minimal report-only or mocked eval path.
 - Add run manifests with commit SHA, config digest, model IDs, dependency snapshot, and artifact checksums.
 - Split the current CLI into clearer subcommands such as `gmass eval`, `gmass combine`, and `gmass report` if the interface needs to grow.

@@ -129,6 +129,32 @@ Check the installed CLI:
 gmass --help
 ```
 
+## Repository Structure
+
+The repository is organized around one production path, with compatibility
+wrappers kept thin:
+
+```text
+run_bilingual_eval.py  # installed as the gmass CLI
+models/                # provider routing for evaluated models
+scorer/                # language-aware scorer ensemble and safety checks
+core/                  # config, logging, metrics, and shared utilities
+probes/                # probe loading
+translation/           # translation adapters
+scripts/               # reports, converters, deployment helpers
+configs/               # thresholds, scorer roles, model metadata
+app/                   # Gradio/Hugging Face Space app files
+tests/                 # regression tests for routing, scoring, metrics, reports
+```
+
+`pyproject.toml` is the dependency source of truth. The `requirements*.txt`
+files are compatibility entry points for common install targets.
+
+Legacy exploratory scripts such as `run_pilot.py`, `test_models.py`, and
+`test_classifiers.py` are not the production entry point and are not installed
+as package modules. Prefer `gmass` and the tested scripts in `scripts/` for
+new work.
+
 ## Environment Variables
 
 Create or update `.env` in the project root:
@@ -246,6 +272,68 @@ Run all models but skip automatic report generation:
 ```powershell
 gmass all --per-domain 5 --skip-report
 ```
+
+In `gmass all`, each model runs in its own subprocess. If one provider hits a
+quota, token, API, or local backend failure, the remaining model runs continue.
+The command exits non-zero at the end when any model failed, but it preserves
+available outputs and still attempts report generation.
+
+## Hugging Face / Gradio Deployment
+
+The public Gradio app lives in `app/` and imports the same pipeline modules used
+by the CLI. It is suitable for an open evaluator/demo, not clinical deployment
+certification.
+
+Prepare a Space bundle from the project root:
+
+```powershell
+python scripts/prepare_hf_space.py
+```
+
+This creates:
+
+```text
+dist/hf_space/
+```
+
+Push the contents of `dist/hf_space/` to a Hugging Face Space created with:
+
+- SDK: `Gradio`
+- app file: `app.py`
+- Python: 3.10+
+
+Configure these Space secrets:
+
+```text
+OPENAI_API_KEY
+GEMINI_API_KEY
+HF_TOKEN
+KHAYA_API_KEY
+```
+
+Recommended public CPU Space settings:
+
+```text
+SCORER_BACKEND=policy_api
+GEMINI_MODEL=gemini-2.5-flash
+SCORER_POLICY_MODEL=gemini-2.5-flash
+```
+
+To include precomputed benchmark charts in the Space bundle:
+
+```powershell
+python scripts/prepare_hf_space.py --include-results
+```
+
+Local app smoke test:
+
+```powershell
+python -m pip install -r requirements-app.txt -c constraints.txt
+python app/app.py
+```
+
+Then open the printed local URL. The app should load without API keys; API keys
+are only needed when you run model/scorer calls.
 
 ## Docker
 
