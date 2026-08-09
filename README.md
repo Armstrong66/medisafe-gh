@@ -57,12 +57,19 @@ python -m pip install -r requirements.txt
 
 `requirements.txt` is intentionally thin and installs the package from
 `pyproject.toml`. Optional local model dependencies live in
-`requirements-local.txt` / `.[local]`.
+`requirements-local.txt` / `.[local]`. The Gradio/Plotly UI dependencies live
+in `requirements-app.txt` / `.[app]`.
 
 For local transformer scorers or local Phi-3/BioMistral backends:
 
 ```powershell
 python -m pip install -r requirements-local.txt
+```
+
+For the local Gradio UI:
+
+```powershell
+python -m pip install -r requirements-app.txt
 ```
 
 On macOS/Linux or Git Bash, the bootstrap script performs the same base setup
@@ -78,16 +85,16 @@ On Windows PowerShell:
 .\setup.ps1
 ```
 
-Install local backend or test tooling during setup with:
+Install local backend, UI, or test tooling during setup with:
 
 ```bash
-./setup.sh --local --dev
+./setup.sh --local --app --dev
 ```
 
 PowerShell equivalent:
 
 ```powershell
-.\setup.ps1 -Local -Dev
+.\setup.ps1 -Local -App -Dev
 ```
 
 If a copied or moved virtual environment gives a stale `pip.exe` launcher error,
