@@ -1,0 +1,4 @@
+git+https://github.com/Armstrong66/medisafe-gh.git
+gradio==4.44.0
+plotly==5.22.0
+pandas>=2.0.0
