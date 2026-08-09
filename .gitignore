@@ -38,6 +38,7 @@ htmlcov/
 .vscode/
 .idea/
 .agents/
+gmass-demo/
 .DS_Store
 Thumbs.db
 

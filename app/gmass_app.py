@@ -21,6 +21,11 @@ import pandas as pd
 import plotly.graph_objects as go
 from dotenv import load_dotenv
 
+try:
+    import spaces
+except Exception:  # pragma: no cover - spaces exists only on Hugging Face runtimes
+    spaces = None
+
 APP_DIR = Path(__file__).resolve().parent
 ROOT = APP_DIR if (APP_DIR / "configs").exists() else APP_DIR.parent
 if str(ROOT) not in sys.path:
@@ -70,6 +75,16 @@ REQUIRED_ENV_BY_MODEL = {
 }
 
 DEFAULT_RESULTS_PATH = ROOT / "data" / "eval_outputs" / "combined" / "all_models_scored.jsonl"
+
+
+if spaces is not None:
+    @spaces.GPU
+    def zerogpu_compatibility_probe():
+        """Satisfy ZeroGPU startup checks; G-MASS itself uses API/CPU calls."""
+        return "ready"
+else:
+    def zerogpu_compatibility_probe():
+        return "ready"
 
 
 def _error(message: str) -> str:
@@ -462,4 +477,4 @@ with gr.Blocks(title="G-MASS", theme=gr.themes.Soft(), css=CSS) as demo:
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")))
+    demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")), ssr=False)

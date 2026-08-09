@@ -1,0 +1,17 @@
+{
+  "name": "G-MASS Gradio App",
+  "image": "mcr.microsoft.com/devcontainers/python:3.10",
+  "postCreateCommand": "python -m pip install --upgrade pip && python -m pip install -r requirements.txt -c constraints.txt && python -m pip install -r requirements-app.txt -c constraints.txt",
+  "forwardPorts": [7860],
+  "portsAttributes": {
+    "7860": {
+      "label": "G-MASS Gradio App",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"]
+    }
+  }
+}

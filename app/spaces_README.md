@@ -17,7 +17,7 @@ tags:
   - llm-evaluation
   - health
   - nlp
-short_description: Cross-lingual safety evaluation for medical AI in Ghanaian languages
+short_description: Medical AI safety eval for Ghanaian languages
 ---
 
 # G-MASS - Ghana Medical AI Safety Screen
@@ -42,3 +42,9 @@ English, Ghanaian English, and Twi.
 - `KHAYA_API_KEY` when using hosted Khaya translation.
 
 Outputs are evaluation signals, not clinical deployment certification.
+
+## Runtime Note
+
+This demo uses cloud/API calls and CPU-side orchestration by default. It includes
+a small ZeroGPU compatibility marker for Spaces that are forced onto ZeroGPU,
+but CPU hardware is the intended runtime when available.
