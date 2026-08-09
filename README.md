@@ -335,6 +335,34 @@ python app/app.py
 Then open the printed local URL. The app should load without API keys; API keys
 are only needed when you run model/scorer calls.
 
+### Hugging Face ZeroGPU Note
+
+The G-MASS app does not load local GPU models by default; it uses cloud/API
+model calls and CPU-side scoring helpers. If the Space is forced onto ZeroGPU,
+the app includes a small `@spaces.GPU` compatibility marker so the ZeroGPU
+runtime can start, but the recommended hardware for this public demo remains a
+CPU Space when available.
+
+## GitHub Codespaces Temporary Hosting
+
+GitHub Pages cannot host this app because Pages is static and G-MASS is a
+Python/Gradio server. For a temporary live demo from GitHub, use Codespaces:
+
+1. Push this repo to GitHub.
+2. Open the repo in GitHub Codespaces.
+3. Wait for `.devcontainer/devcontainer.json` to install base and app deps.
+4. Run:
+
+   ```bash
+   bash scripts/run_codespaces_app.sh
+   ```
+
+5. Open the forwarded port `7860`. Set port visibility to public if you need to
+   share the temporary demo URL.
+
+Codespaces URLs are suitable for pilot testing and demos while the Codespace is
+running. They are not a permanent public deployment target.
+
 ## Docker
 
 Build a reproducible base image from the project root:

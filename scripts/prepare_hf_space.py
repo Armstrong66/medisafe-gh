@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 APP_DIR = ROOT / "app"
 DEFAULT_OUTPUT_DIR = ROOT / "dist" / "hf_space"
 COMBINED_RESULTS = ROOT / "data" / "eval_outputs" / "combined" / "all_models_scored.jsonl"
+SOURCE_DIRS = ("configs", "core", "models", "probes", "scorer", "scripts", "translation")
+SOURCE_FILES = ("run_bilingual_eval.py",)
 
 
 def copy_file(src: Path, dst: Path) -> None:
@@ -24,7 +26,18 @@ def copy_file(src: Path, dst: Path) -> None:
 def copy_tree(src: Path, dst: Path) -> None:
     if dst.exists():
         remove_tree(dst)
-    shutil.copytree(src, dst)
+    shutil.copytree(
+        src,
+        dst,
+        ignore=shutil.ignore_patterns(
+            "__pycache__",
+            "*.pyc",
+            "*.pyo",
+            "logs",
+            "*.log",
+            "run_codespaces_app.sh",
+        ),
+    )
     print(f"copied {src.relative_to(ROOT)} -> {dst.relative_to(ROOT)}")
 
 
@@ -46,7 +59,10 @@ def prepare_space_bundle(output_dir: Path, include_results: bool = False) -> Pat
     copy_file(APP_DIR / "gmass_app.py", output_dir / "gmass_app.py")
     copy_file(APP_DIR / "spaces_README.md", output_dir / "README.md")
     copy_file(APP_DIR / "spaces_requirements.txt", output_dir / "requirements.txt")
-    copy_tree(ROOT / "configs", output_dir / "configs")
+    for source_dir in SOURCE_DIRS:
+        copy_tree(ROOT / source_dir, output_dir / source_dir)
+    for source_file in SOURCE_FILES:
+        copy_file(ROOT / source_file, output_dir / source_file)
     (output_dir / ".gitignore").write_text(
         "\n".join(
             [
