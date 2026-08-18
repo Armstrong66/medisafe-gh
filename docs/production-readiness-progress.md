@@ -52,6 +52,8 @@ Date: 2026-08-05
 - Added dynamic dataset autodiscovery engine (`auto_discover_dataset_metadata()`) in `core/config.py` enabling model-agnostic, language-agnostic, and domain-agnostic probe evaluation without hardcoded assumptions.
 - Added pre-flight configuration audit engine (`validate_setup_and_configs()`) with structured warning/error logging to catch miscalibrations or missing optional credentials before execution.
 - Updated Gradio UI Batch Evaluator labels to explicitly emphasize native `.jsonl` and `.csv` bilingual dataset parsing.
+- Resolved Windows/Linux runner PATH resolution in `.github/workflows/smoke.yml`, `setup.ps1`, and `setup.sh` so `gmass` is discovered on all CI runners.
+- Synchronized `dev/medisafe-gh-v2` and `main` branches and updated `v1.1.0` tag.
 
 ## Remaining & Versioned Roadmap
 
