@@ -1,95 +1,112 @@
 #!/usr/bin/env bash
-# G-MASS Setup Script
-# Run once after cloning: bash scripts/setup.sh
-# ─────────────────────────────────────────────────────────────
-set -e
+set -euo pipefail
 
-echo ""
-echo "╔══════════════════════════════════════════════╗"
-echo "║   G-MASS · MediSafe-GH · Setup               ║"
-echo "║   Africa AI Safety Prize 2026                ║"
-echo "╚══════════════════════════════════════════════╝"
-echo ""
+echo "=== G-MASS Setup ==="
 
-# ── 1. Python version check ───────────────────────────────────
-echo "[1/6] Checking Python version..."
-python_version=$(python3 --version 2>&1 | awk '{print $2}')
-required="3.11"
-if python3 -c "import sys; exit(0 if sys.version_info >= (3,11) else 1)"; then
-    echo "      ✓ Python $python_version"
-else
-    echo "      ✗ Python $python_version detected — Python 3.11+ required"
-    echo "        Install from: https://www.python.org/downloads/"
-    exit 1
+INSTALL_LOCAL=false
+INSTALL_DEV=false
+INSTALL_APP=false
+PIP_CONSTRAINT_ARGS=()
+if [ -f constraints.txt ]; then
+  PIP_CONSTRAINT_ARGS=(-c constraints.txt)
 fi
 
-# ── 2. Create .env from template ─────────────────────────────
-echo "[2/6] Setting up .env file..."
-if [ -f ".env" ]; then
-    echo "      ✓ .env already exists — skipping (edit manually if needed)"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --local)
+      INSTALL_LOCAL=true
+      ;;
+    --dev)
+      INSTALL_DEV=true
+      ;;
+    --app)
+      INSTALL_APP=true
+      ;;
+    -h|--help)
+      echo "Usage: ./setup.sh [--local] [--dev] [--app]"
+      echo "  --local  install local Transformers backend dependencies"
+      echo "  --dev    install developer/test tooling"
+      echo "  --app    install Gradio/Plotly UI dependencies"
+      exit 0
+      ;;
+    *)
+      echo "FAIL Unknown option: $1"
+      echo "Run ./setup.sh --help for usage."
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# 1. Python check
+PYTHON_CMD=python3
+if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
+  PYTHON_CMD=python
+fi
+if ! command -v "$PYTHON_CMD" >/dev/null 2>&1; then
+  echo "FAIL Python 3.10+ required"
+  exit 1
+fi
+"$PYTHON_CMD" -c "import sys; exit(0 if sys.version_info >= (3,10) else 1)" \
+  && echo "OK Python $($PYTHON_CMD --version)" \
+  || { echo "FAIL Python 3.10+ required"; exit 1; }
+
+# 2. .env
+if [ -f .env ]; then
+  echo "OK .env exists"
+elif [ -f .env.example ]; then
+  cp .env.example .env
+  echo "OK .env created from .env.example"
+  echo "Fill in your real API keys in .env before running the project."
 else
-    cp .env.example .env
-    echo "      ✓ .env created from .env.example"
-    echo "      ⚠ IMPORTANT: Open .env and fill in your API keys before running gmass"
+  echo "FAIL .env missing and .env.example was not found"
+  exit 1
 fi
 
-# ── 3. Install Python package ─────────────────────────────────
-echo "[3/6] Installing medisafe-gh package..."
-pip install --quiet --upgrade pip
-pip install --quiet -e ".[dev]"
-echo "      ✓ Package installed (gmass CLI available)"
-
-# ── 4. Download fasttext LID model ───────────────────────────
-echo "[4/6] Downloading fasttext language identification model..."
-mkdir -p models/fasttext
-LID_PATH="models/fasttext/lid.176.bin"
-if [ -f "$LID_PATH" ]; then
-    echo "      ✓ Already downloaded: $LID_PATH"
-else
-    curl -sL --progress-bar \
-        https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin \
-        -o "$LID_PATH"
-    echo "      ✓ Downloaded: $LID_PATH (~1MB)"
+# Warn if the new .env still contains obvious placeholders
+if [ -f .env ] && grep -qE 'your_[A-Za-z0-9_]+|YOUR_[A-Z0-9_]+' .env 2>/dev/null; then
+  echo "WARNING: .env contains placeholder values. Update .env with real keys before use."
 fi
 
-# ── 5. Ollama setup (local models) ────────────────────────────
-echo "[5/6] Checking Ollama for local model inference..."
-if command -v ollama &> /dev/null; then
-    echo "      ✓ Ollama installed: $(ollama --version 2>/dev/null || echo 'version unknown')"
-    echo ""
-    echo "      To pull local models (do this once, then keep 'ollama serve' running):"
-    echo "        ollama pull llama3.2:3b"
-    echo "        ollama pull phi3:mini"
-    echo ""
+# 3. Install dependencies and editable package
+"$PYTHON_CMD" -m pip install --upgrade pip
+"$PYTHON_CMD" -m pip install -r requirements.txt "${PIP_CONSTRAINT_ARGS[@]}"
+echo "OK base dependencies and editable gmass CLI installed"
+
+if [ "$INSTALL_LOCAL" = true ]; then
+  "$PYTHON_CMD" -m pip install -r requirements-local.txt "${PIP_CONSTRAINT_ARGS[@]}"
+  echo "OK local Transformers backend dependencies installed"
 else
-    echo "      ⚠ Ollama not found — needed for LLaMA-3.2 3B and Phi-3 Mini"
-    echo "        Install: curl -fsSL https://ollama.com/install.sh | sh"
-    echo "        Then:    ollama pull llama3.2:3b && ollama pull phi3:mini"
-    echo ""
+  echo "SKIP local Transformers dependencies (run ./setup.sh --local to install them)"
 fi
 
-# ── 6. Verify gmass CLI ───────────────────────────────────────
-echo "[6/6] Verifying gmass CLI..."
-if gmass --version &> /dev/null; then
-    echo "      ✓ $(gmass --version)"
+if [ "$INSTALL_APP" = true ]; then
+  "$PYTHON_CMD" -m pip install -r requirements-app.txt "${PIP_CONSTRAINT_ARGS[@]}"
+  echo "OK app UI dependencies installed"
 else
-    echo "      ✗ gmass CLI not found — check pip install step above"
-    exit 1
+  echo "SKIP app UI dependencies (run ./setup.sh --app to install them)"
 fi
 
-# ── Done ──────────────────────────────────────────────────────
-echo ""
-echo "╔══════════════════════════════════════════════╗"
-echo "║   Setup complete ✓                           ║"
-echo "╚══════════════════════════════════════════════╝"
+if [ "$INSTALL_DEV" = true ]; then
+  "$PYTHON_CMD" -m pip install -e ".[dev]" "${PIP_CONSTRAINT_ARGS[@]}"
+  echo "OK developer dependencies installed"
+fi
+
+# 4. fasttext LID model
+mkdir -p scorer/models
+if [ -f scorer/models/lid.176.ftz ]; then
+  echo "OK fasttext LID model present"
+else
+  curl -sL https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.ftz \
+       -o scorer/models/lid.176.ftz
+  echo "OK fasttext LID downloaded"
+fi
+
+# 5. Verify current restored pipeline environment
+"$PYTHON_CMD" scripts/check_environment.py && echo "=== Setup complete ==="
+
 echo ""
 echo "Next steps:"
-echo "  1. Fill in your API keys in .env"
-echo "  2. Run probe check:  gmass probe check"
-echo "  3. Dry run:          gmass evaluate --model gpt-4o-mini --language english --dry-run"
-echo "  4. Pilot batch:      gmass evaluate --model gpt-4o-mini --language english"
-echo ""
-echo "For nohup batch runs on RTX:"
-echo "  nohup bash scripts/run_full_eval.sh > logs/nohup_out.txt 2>&1 &"
-echo "  tail -f logs/gmass_eval.log"
-echo ""
+echo "  1. Fill in .env with your API keys if needed"
+echo "  2. $PYTHON_CMD scripts/check_environment.py"
+echo "  3. gmass phi3 --probe-file data/probes/simulation_set_6_probes.jsonl --full"

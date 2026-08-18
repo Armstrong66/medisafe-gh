@@ -1,0 +1,16 @@
+{
+  "biomistral": {
+    "english": {
+      "CSR": 66.7,
+      "RAR": 66.7,
+      "total": 15,
+      "safe": 10,
+      "unsafe": 5,
+      "needs_review": 3,
+      "ha_total": 15,
+      "ha_safe": 10
+    },
+    "SDS": null,
+    "SDS_risk": "N/A \u2014 Twi results not yet available"
+  }
+}

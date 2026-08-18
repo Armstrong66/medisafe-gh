@@ -1,68 +1,63 @@
 [build-system]
 requires = ["setuptools>=72.0", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "medisafe-gh"
-version = "0.1.0"
-description = "G-MASS: Ghana Medical AI Safety Screen — cross-lingual safety evaluation for medical AI in Ghanaian languages"
+version = "1.1.0"
+description = "G-MASS: Ghana Medical AI Safety Screen -- cross-lingual safety evaluation for medical AI in Ghanaian languages"
 readme = "README.md"
-requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+license = "Apache-2.0"
 keywords = ["ai-safety", "medical-ai", "ghana", "twi", "llm-evaluation", "g-mass", "africa-ai"]
-authors = [
-  { name = "MediSafe-GH Team" }
-]
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Science/Research",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
-  "License :: OSI Approved :: Apache Software License",
-  "Programming Language :: Python :: 3.11",
-]
+authors = [{ name = "MediSafe-GH Team" }]
 dependencies = [
-  "pyyaml==6.0.2",
-  "python-dotenv==1.0.1",
+  "openai>=1.30.0",
+  "google-genai==2.10.0",
+  "huggingface_hub>=0.23.0",
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.0",
+  "PyYAML>=6.0.0",
+  "numpy>=1.22.4,<2.0",
+  "fasttext-wheel>=0.9.2",
+  "openpyxl>=3.1.0",
   "pandas==2.2.3",
   "datasets==2.20.0",
   "jsonlines==4.0.0",
-  "openai==1.35.14",
-  "google-generativeai==0.7.2",
-  "transformers==4.42.4",
-  "torch==2.3.1",
-  "accelerate==0.31.0",
   "scikit-learn==1.5.1",
-  "numpy==1.26.4",
-  "requests==2.32.3",
   "tqdm==4.66.4",
   "rich==13.7.1",
   "jinja2==3.1.4",
 ]
 
 [project.optional-dependencies]
-dev = [
-  "pytest==8.2.2",
-  "pytest-cov==5.0.0",
-  "black==24.4.2",
-  "ruff==0.5.0",
+local = [
+  "torch==2.3.1",
+  "transformers>=4.45.0,<5.0",
+  "accelerate==0.31.0",
+  "safetensors>=0.4.3",
+  "sentencepiece>=0.2.0",
 ]
+app = [
+  "gradio==5.23.1",
+  "plotly==5.22.0",
+]
+dev = ["pytest>=8.2", "black>=24.4", "ruff>=0.5"]
 
 [project.scripts]
-# CLI entry point: `gmass evaluate --config configs/models.yaml`
-gmass = "medisafe_gh.cli:main"
+gmass = "run_bilingual_eval:main"
 
 [project.urls]
-Homepage = "https://github.com/Armstrong66/medisafe-gh"
-Repository = "https://github.com/Armstrong66/medisafe-gh"
-"HuggingFace Dataset" = "https://huggingface.co/datasets/[hf-username]/gmass-probe-set"
+Homepage = "https://github.com/[username]/medisafe-gh"
+"HuggingFace Dataset" = "https://huggingface.co/datasets/[username]/gmass-probe-set"
+
+[tool.setuptools]
+py-modules = ["run_bilingual_eval"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["medisafe_gh*"]
+include = ["core*", "models*", "probes*", "scorer*", "scripts*", "translation*"]
+exclude = ["tests*", "venv*"]
 
 [tool.ruff]
 line-length = 100
-select = ["E", "F", "I"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]

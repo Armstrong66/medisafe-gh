@@ -1,4 +1,4 @@
-"""
+r"""
 core.utils — Shared I/O, caching, and environment helpers.
 Owner: D (Engineering Lead)  |  MediSafe-GH · Africa AI Safety Prize 2026
 
@@ -7,7 +7,7 @@ GMASS_Coding_Standard.md reference repo). Function names from BOTH
 versions are kept as aliases so nothing else in the codebase breaks:
 
     load_jsonl()         — returns [] on missing file (does not raise)
-    append_jsonl()        \\__ same function, two names
+    append_jsonl()        \__ same function, two names
     save_jsonl_line()     /
     load_completed_ids()  — works with either function name above
 
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 # JSONL I/O
 # ══════════════════════════════════════════════════════════════════════════════
 
-def load_jsonl(path: str | Path) -> list[dict]:
+def load_jsonl(path: str | Path, warn_missing: bool = True) -> list[dict]:
     """
     Load all records from a JSONL file.
 
@@ -40,7 +40,11 @@ def load_jsonl(path: str | Path) -> list[dict]:
     """
     p = Path(path)
     if not p.exists():
-        logger.warning(f"JSONL not found: {p} — returning []")
+        message = f"JSONL not found: {p} - returning []"
+        if warn_missing:
+            logger.warning(message)
+        else:
+            logger.debug(message)
         return []
 
     records, errors = [], 0
@@ -92,7 +96,7 @@ def load_completed_ids(output_path: str | Path, id_field: str = "probe_id") -> s
         probes = [p for p in all_probes if p["probe_id"] not in done]
         logger.info(f"Resuming: {len(probes)} probes remaining")
     """
-    records = load_jsonl(output_path)
+    records = load_jsonl(output_path, warn_missing=False)
     ids = {r[id_field] for r in records if id_field in r}
     if ids:
         logger.info(f"Resume: {len(ids)} probes already done in {Path(output_path).name}")

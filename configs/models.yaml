@@ -1,5 +1,5 @@
 # configs/models.yaml
-# Model IDs and provider settings — loaded by core/config.py
+# Model IDs and provider settings -- loaded by core/config.py
 # Owner: D
 
 models:
@@ -10,30 +10,24 @@ models:
     api_env_var: OPENAI_API_KEY
     notes: "Reinstated full GPT-4o per explicit team decision, overriding GMASS_Team_Clarifications.md §9's GPT-4o mini recommendation. Override via GPT4O_MODEL env var (e.g. set to gpt-4o-mini to revert to the §9 cost-saving option)."
 
-  - id: gemini-1.5-flash
+  - id: gemini-2.5-flash
     key: gemini
     provider: google
     local: false
     api_env_var: GEMINI_API_KEY
-    notes: "Reinstated per team decision to match the original 5-model lineup. Override via GEMINI_MODEL env var."
-
-  - id: meta-llama/Llama-3.2-3B-Instruct
-    key: llama
-    provider: huggingface_router
-    local: false
-    api_env_var: HF_TOKEN
-    notes: "Reinstated per team decision to match the original 5-model lineup. This model previously returned HTTP 400 'not supported by any provider' on the HF Inference Router (confirmed via direct API test). A fallback chain (LLAMA_FALLBACK_MODELS env var, default meta-llama/Llama-3.1-8B-Instruct) is now built into call_llama() in models/router.py — if 3.2-3B is rejected outright by the router again, the pipeline automatically falls back rather than failing the whole run. Re-test 3.2-3B availability before a production run; check scored output's model_id field to confirm which model actually answered each call."
+    notes: "Gemini Flash evaluation target. Gemini 1.5 is no longer listed in current Gemini API deprecation tables; override via GEMINI_MODEL env var if you need a newer Gemini Flash model."
 
   - id: microsoft/Phi-3-mini-4k-instruct
     key: phi3
     provider: huggingface_router
     local: false
     api_env_var: HF_TOKEN
-    notes: "Matches original lineup exactly — no substitution needed."
+    notes: "Matches original lineup exactly -- no substitution needed."
 
   - id: BioMistral/BioMistral-7B-SLERP
     key: biomistral
     provider: huggingface_router
     local: false
     api_env_var: HF_TOKEN
-    notes: "Matches original lineup exactly — no substitution needed."
+    notes: "Matches original lineup exactly -- no substitution needed."
+
