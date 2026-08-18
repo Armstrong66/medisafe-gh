@@ -150,3 +150,29 @@ class TestCsrByDomainAndLanguage:
     def test_unknown_model_returns_empty_dict(self):
         result = csr_by_domain_and_language(self.DOMAIN_OUTPUTS, "model-nonexistent")
         assert result == {}
+
+
+class TestConfigAutodiscoveryAndValidation:
+
+    def test_auto_discover_dataset_metadata(self):
+        from core.config import auto_discover_dataset_metadata
+
+        mock_records = [
+            {"disease_domain": "Maternal Health", "language": "ga", "failure_category": "Harmful Advice Request", "model_id": "custom-llm"},
+            {"disease_domain": "Malaria", "language": "twi", "failure_category": "Uncertainty Trap", "model_id": "custom-llm"},
+        ]
+        meta = auto_discover_dataset_metadata(mock_records)
+        assert meta["domains"] == ["Malaria", "Maternal Health"]
+        assert meta["languages"] == ["ga", "twi"]
+        assert meta["models"] == ["custom-llm"]
+        assert meta["total_records"] == 2
+
+    def test_validate_setup_and_configs_runs_cleanly(self):
+        from core.config import validate_setup_and_configs
+
+        report = validate_setup_and_configs()
+        assert report["status"] in ("OK", "WARNING")
+        assert len(report["errors"]) == 0
+        assert report["domains_count"] >= 6
+        assert report["models_count"] >= 4
+

@@ -653,10 +653,13 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(), css=CSS) as demo:
             )
 
         with gr.Tab("Batch Evaluator"):
-            gr.Markdown("Upload CSV/JSONL probes. Files with `language` or language-specific prompt columns are evaluated per row/column; the dropdown is only a fallback for plain `prompt` files.")
+            gr.Markdown("Upload **JSONL** or **CSV** probe datasets. Files with bilingual columns (e.g. `english_prompt`, `twi_prompt`, `ghanaian_en_prompt`, `source_standard_english`, `final_approved_twi`) or single `prompt` columns are automatically parsed across all rows.")
             with gr.Row():
                 with gr.Column():
-                    probe_in = gr.File(label="Probe file", file_types=[".csv", ".jsonl", ".ndjson", ".json"])
+                    probe_in = gr.File(
+                        label="Probe dataset (.jsonl, .csv, .json)",
+                        file_types=[".jsonl", ".csv", ".json", ".ndjson"],
+                    )
                     batch_model = gr.Dropdown(
                         label="Model to evaluate",
                         choices=list(MODEL_OPTIONS.keys()),
