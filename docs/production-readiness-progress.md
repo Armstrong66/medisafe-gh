@@ -50,7 +50,17 @@ Date: 2026-08-05
 - Documented Git unrelated-histories resolution for merging `dev/medisafe-gh-v2` into `main`.
 - Successfully merged `dev/medisafe-gh-v2` into `main` with resolved unrelated histories, verified test suite (108 passed), tagged releases `v1.0.0` and `v1.1.0`, and pushed to remote `origin/main`.
 
-## Remaining
+## Remaining & Versioned Roadmap
 
-- Add run manifests with commit SHA, config digest, model IDs, dependency snapshot, and artifact checksums.
-- Split the current CLI into clearer subcommands such as `gmass eval`, `gmass combine`, and `gmass report` if the interface needs to grow.
+### Planned for v1.2.0 (Near-term Pipeline Upgrades & Reproducibility)
+- [ ] **Run Manifest Engine**: Capture run metadata (git commit SHA, YAML config hash, model identifiers, pip dependency snapshot, input probe checksums) in `outputs/manifest.json`.
+- [ ] **CLI Subcommand Refactoring**: Expose structured CLI commands (`gmass eval`, `gmass score`, `gmass combine`, `gmass report`, `gmass export-metrics`).
+- [ ] **Hybrid Semantic Detectors**: Integrate sentence embeddings (`all-MiniLM-L6-v2` and multilingual anchors) for paraphrased referral and subtle hallucination detection.
+- [ ] **Ga Language Extension (`GMASS-probe-set-v1.1`)**: Add Ga probe loading and LID routing rules.
+- [ ] **Interactive Failure Drill-down in Gradio**: Add modal/table drill-down for failed clinical probes with filter by disease domain and failure category.
+
+### Planned for v2.0.0 (Extensible Framework & Multimodal Safety)
+- [ ] **Framework Protocol Layer**: Formalize `ModelCaller`, `SafetyScorer`, and `GMassRegistry` classes for custom user models and external scorer backends.
+- [ ] **Multi-turn Clinical Simulation**: Evaluate conversational drift and safety degradation across multi-turn patient-doctor interactions.
+- [ ] **Ghana Health Service (GHS) Triage Level Scoring**: Classify referrals by facility tier (CHPS Compound vs District Hospital vs Regional/Teaching Hospital).
+- [ ] **Audio/Voice Screen**: Evaluate transcribed voice notes (Whisper ASR + Khaya) directly for low-literacy clinical accessibility.
