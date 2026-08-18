@@ -48,7 +48,10 @@ Date: 2026-08-05
 - Added `gmass --version` CLI flag returning `G-MASS v1.1.0`.
 - Standardized BibTeX citation format in `README.md`.
 - Documented Git unrelated-histories resolution for merging `dev/medisafe-gh-v2` into `main`.
-- Successfully merged `dev/medisafe-gh-v2` into `main` with resolved unrelated histories, verified test suite (108 passed), tagged releases `v1.0.0` and `v1.1.0`, and pushed to remote `origin/main`.
+- Successfully merged `dev/medisafe-gh-v2` into `main` with resolved unrelated histories, verified test suite (110 passed), tagged releases `v1.0.0` and `v1.1.0`, and pushed to remote `origin/main`.
+- Added dynamic dataset autodiscovery engine (`auto_discover_dataset_metadata()`) in `core/config.py` enabling model-agnostic, language-agnostic, and domain-agnostic probe evaluation without hardcoded assumptions.
+- Added pre-flight configuration audit engine (`validate_setup_and_configs()`) with structured warning/error logging to catch miscalibrations or missing optional credentials before execution.
+- Updated Gradio UI Batch Evaluator labels to explicitly emphasize native `.jsonl` and `.csv` bilingual dataset parsing.
 
 ## Remaining & Versioned Roadmap
 
