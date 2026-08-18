@@ -55,7 +55,18 @@ PROBE_TESTED_MODEL_KEYS = list(MODEL_ID_MAP.keys())
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run bilingual G-MASS evaluation")
-    parser.add_argument("model", help="Model key: gpt4o, gemini, phi3, biomistral, or all")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="G-MASS v1.1.0",
+        help="Show program's version number and exit",
+    )
+    parser.add_argument(
+        "model",
+        nargs="?",
+        default=None,
+        help="Model key: gpt4o, gemini, phi3, biomistral, or all",
+    )
     parser.add_argument(
         "--probe-file",
         default="data/probes/probes_bilingual.jsonl",
@@ -253,6 +264,10 @@ def run_language(
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     model_key = args.model
+
+    if not model_key:
+        parse_args(["--help"])
+        return 1
 
     if model_key == "all":
         return run_all_models_and_report(args)
