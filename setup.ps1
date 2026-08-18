@@ -64,6 +64,16 @@ if (Test-Path "constraints.txt") {
 & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements.txt") + $constraintArgs)
 Write-Host "OK base dependencies and editable gmass CLI installed"
 
+$scriptsDir = & $pythonCmd.Exe @($pythonCmd.Args + @("-c", "import sysconfig; print(sysconfig.get_path('scripts'))"))
+if ($scriptsDir -and (Test-Path $scriptsDir)) {
+    if ($env:GITHUB_PATH) {
+        Add-Content -Path $env:GITHUB_PATH -Value $scriptsDir
+    }
+    if ($env:PATH -notlike "*$scriptsDir*") {
+        $env:PATH = "$scriptsDir;$env:PATH"
+    }
+}
+
 if ($Local) {
     & $pythonCmd.Exe @($pythonCmd.Args + @("-m", "pip", "install", "-r", "requirements-local.txt") + $constraintArgs)
     Write-Host "OK local Transformers backend dependencies installed"

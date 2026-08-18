@@ -24,7 +24,9 @@ jobs:
         run: bash setup.sh --app
 
       - name: Check CLI
-        run: gmass --help
+        run: |
+          export PATH="$(python -c 'import sysconfig; print(sysconfig.get_path("scripts"))'):$PATH"
+          gmass --help
 
       - name: Check app import
         run: |
@@ -60,7 +62,12 @@ jobs:
 
       - name: Check CLI
         shell: pwsh
-        run: gmass --help
+        run: |
+          $scriptsDir = python -c "import sysconfig; print(sysconfig.get_path('scripts'))"
+          if ($scriptsDir -and (Test-Path $scriptsDir) -and ($env:PATH -notlike "*$scriptsDir*")) {
+              $env:PATH = "$scriptsDir;$env:PATH"
+          }
+          gmass --help
 
       - name: Check app import
         shell: pwsh

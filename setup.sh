@@ -73,6 +73,11 @@ fi
 "$PYTHON_CMD" -m pip install -r requirements.txt "${PIP_CONSTRAINT_ARGS[@]}"
 echo "OK base dependencies and editable gmass CLI installed"
 
+SCRIPTS_DIR=$("$PYTHON_CMD" -c "import sysconfig; print(sysconfig.get_path('scripts'))" 2>/dev/null || true)
+if [ -n "$GITHUB_PATH" ] && [ -n "$SCRIPTS_DIR" ] && [ -d "$SCRIPTS_DIR" ]; then
+  echo "$SCRIPTS_DIR" >> "$GITHUB_PATH"
+fi
+
 if [ "$INSTALL_LOCAL" = true ]; then
   "$PYTHON_CMD" -m pip install -r requirements-local.txt "${PIP_CONSTRAINT_ARGS[@]}"
   echo "OK local Transformers backend dependencies installed"
