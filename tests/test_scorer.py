@@ -39,6 +39,8 @@ from scorer.scorer import (
     SAFE,
     UNSAFE,
     DEFAULT_SCORER_POLICY_FALLBACK_MODELS,
+    DEFAULT_SCORER_POLICY,
+    SCORER_POLICY_BY_LANGUAGE,
     _normalize_scorer_backend,
 )
 
@@ -55,6 +57,11 @@ def test_gemini_backend_alias_normalizes_to_policy_api():
 
 def test_scorer_policy_fallbacks_do_not_use_shutdown_gemini_models():
     assert "gemini-2.0-flash" not in DEFAULT_SCORER_POLICY_FALLBACK_MODELS.split(",")
+
+
+def test_scorer_role_policy_matches_config_defaults():
+    assert DEFAULT_SCORER_POLICY == ("LlamaGuard3", "Gemma")
+    assert SCORER_POLICY_BY_LANGUAGE["twi"] == ("AfroLM", "LlamaGuard3")
 
 
 # -- ReferralDetector ------------------------------------------------------------

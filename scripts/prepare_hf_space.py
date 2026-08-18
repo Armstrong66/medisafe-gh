@@ -79,6 +79,10 @@ def prepare_space_bundle(output_dir: Path, include_results: bool = False) -> Pat
     )
     print(f"wrote {output_dir.relative_to(ROOT) / '.gitignore'}")
 
+    PUBLIC_METRICS = ROOT / "data" / "public_metrics" / "benchmark_summary.json"
+    if PUBLIC_METRICS.exists():
+        copy_file(PUBLIC_METRICS, output_dir / PUBLIC_METRICS.relative_to(ROOT))
+
     if include_results:
         if not COMBINED_RESULTS.exists():
             raise FileNotFoundError(

@@ -2,7 +2,7 @@
 scripts/build_evaluation_report.py — G-MASS Evaluation Results workbook.
 Owner: D (Engineering Lead)  |  MediSafe-GH · Africa AI Safety Prize 2026
 
-Builds the "G-MASS Evaluation Results — 5 Models × 3 Language Conditions"
+Builds the "G-MASS Evaluation Results — 4 Models × 3 Language Conditions"
 workbook matching the team's agreed report layout:
 
   - SUMMARY: per-model CSR/SDS/RAR/deploy-ready table
@@ -48,13 +48,13 @@ from core.logger import get_logger
 
 logger = get_logger(__name__)
 
-# ── Original 5-model lineup, reinstated per team decision ─────────────────────
+# -- Current public model lineup ------------------------------------------------
 # Display order in the report — independent of any model_id naming quirks
 # in the raw data (e.g. fallback substitutions are still grouped under the
 # intended model's row; see build_evaluation_report's MODEL_ID_ALIASES).
 MODEL_DISPLAY_ORDER = [
     ("gpt-4o",                              "GPT-4o"),
-    ("gemini-1.5-flash",                    "Gemini 1.5 Flash"),
+    ("gemini-2.5-flash",                    "Gemini 2.5 Flash"),
     ("microsoft/Phi-3-mini-4k-instruct",    "Phi-3 Mini"),
     ("BioMistral/BioMistral-7B-SLERP",      "BioMistral"),
 ]
@@ -168,7 +168,7 @@ def build_summary_sheet(wb: Workbook, raw_row_count: int, sds_threshold_pp: floa
     ws = wb.create_sheet("SUMMARY", 0)
     last_raw_row = raw_row_count + 1  # +1 for header row
 
-    _style_title(ws, 1, 10, "G-MASS Evaluation Results — 5 Models × 3 Language Conditions")
+    _style_title(ws, 1, 10, "G-MASS Evaluation Results — 4 Models × 3 Language Conditions")
     ws.row_dimensions[1].height = 24
 
     subtitle = (
@@ -305,7 +305,7 @@ def build_per_domain_sheet(wb: Workbook, scored_outputs: list[dict], raw_row_cou
     domains = sorted({o.get("disease_domain", "Unknown") for o in scored_outputs})
     logger.info(f"PER_DOMAIN_BREAKDOWN: {len(domains)} domains discovered: {domains}")
 
-    _style_title(ws, 1, 9, "G-MASS Evaluation Results — 5 Models × 3 Language Conditions")
+    _style_title(ws, 1, 9, "G-MASS Evaluation Results — 4 Models × 3 Language Conditions")
     subtitle = (
         "CSR = Clinical Safety Rate (%) · SDS = Safety Degradation Score "
         "(CSR_EN − CSR_Twi) · RAR = Referral Adequacy Rate (%) · "

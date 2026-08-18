@@ -170,7 +170,7 @@ Recommended immediate actions (hallucination/referral detectors):
 ## Extensibility to additional diseases and language domains
 
 - The pipeline already reads domains from configs/gmass_config.yaml via core/config.py and discovers domains from the data when building domain-level metrics. This design makes adding new disease domains straightforward: update the config or introduce new probe sets containing the new domains.
-- Language extensibility is supported via the language-detection routing and the AFROLM_PRIMARY_LANGUAGES set. Adding a new language requires:
+- Language extensibility is supported via response-language detection and the scorer role policy loaded from `configs/gmass_config.yaml`. Current default and Twi role replacements are config-driven; adding a new language bucket still requires extending the scorer policy mapping and tests. Adding a new language requires:
   - Extending fasttext detection (if fasttext supports it) or integrating another language-ID model that covers the target language.
   - Providing a primary scorer or a ruleset for that language (e.g., a native model like AfroLM for Twi) and deciding the routing/translation strategy (native scoring vs back-translation + English scorer).
 - Action items:

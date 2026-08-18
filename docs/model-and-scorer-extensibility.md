@@ -2,6 +2,8 @@
 
 Date: 2026-08-09
 
+Status update: 2026-08-12
+
 ## Tested Models
 
 The evaluated model surface is intentionally small and easy to extend:
@@ -38,13 +40,20 @@ Scorer runtime backends are already replaceable:
   concrete scorer model IDs without code changes.
 
 The scorer architecture is moderately extensible, but not yet a full plugin
-system. The ensemble routing policy is still hard-coded in `GMassScorer`:
-English/GH-EN routes to LlamaGuard3 plus Gemma, while detected Twi routes to
-AfroLM plus translated LlamaGuard3. Replacing a scorer model is easy; adding a
-new scorer role, language, or voting policy currently requires code changes in
-`scorer/scorer.py` plus tests.
+system. Current primary/secondary role routing is declarative for the supported
+language buckets:
 
-Recommended next improvement: move scorer role routing into a declarative
-config, then have `GMassScorer` build the ensemble from that config. That would
-make judges and language-specific policies replaceable without editing the core
-scoring code.
+- `configs/gmass_config.yaml` declares the default primary/secondary scorer
+  roles and the Twi-specific primary/secondary scorer roles.
+- `core/config.py` loads those scorer role names.
+- `GMassScorer` validates the configured names against the supported scorer
+  implementations, then builds the primary/secondary ensemble from that policy.
+
+Replacing a current scorer role is now config-driven for `LlamaGuard3`, `Gemma`,
+and `AfroLM`. Adding a brand-new scorer implementation, a new language bucket,
+or a different voting policy still requires code changes in `scorer/scorer.py`
+plus tests.
+
+Recommended next improvement: promote the language-bucket mapping itself to a
+YAML list or mapping, so new languages can be added without editing
+`SCORER_POLICY_BY_LANGUAGE`.
