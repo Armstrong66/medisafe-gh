@@ -42,6 +42,12 @@ Date: 2026-08-05
 - Expanded Gradio Batch Evaluator schema auto-parsing to accept and parse `.jsonl`, `.csv`, `.json`, and `.ndjson` files with automatic probe ID assignment and extended prompt column aliases (`source_standard_english`, `final_approved_twi`, `final_approved_ghanaian_english`, etc.).
 - Created public metrics exporter `scripts/export_public_metrics.py` generating `data/public_metrics/benchmark_summary.json` and Markdown tables containing aggregate CSR/SDS/RAR metrics without exposing raw response text.
 - Wired Gradio "Benchmark Results" tab to load directly from `data/public_metrics/benchmark_summary.json`.
+- Cleaned and updated `.gitignore` to strictly exclude bytecode caches (`*.pyc`, `__pycache__`), logs, build outputs, and stray root files.
+- Untracked all stale `.pyc` and log files from git index, staging clean deletions for the next commit.
+- Documented local open-weight Transformers evaluation protocol (`phi3`, `biomistral`, and local ensemble scoring).
+- Added `gmass --version` CLI flag returning `G-MASS v1.1.0`.
+- Standardized BibTeX citation format in `README.md`.
+- Documented Git unrelated-histories resolution for merging `dev/medisafe-gh-v2` into `main`.
 
 ## Remaining
 

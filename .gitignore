@@ -1,9 +1,8 @@
 # Python bytecode and caches
 __pycache__/
-__pycache__
-/__pycache__
 *.py[cod]
 *$py.class
+*.pyc
 
 # Packaging/build artifacts
 build/
@@ -44,12 +43,15 @@ gmass-demo/
 .DS_Store
 Thumbs.db
 
-# Project logs and outputs
+# Project logs and temporary files
 logs/
-outputs/
 *.log
 *.tmp
 *.bak
+
+# Root-level stray evaluation files
+/*.jsonl
+/*.csv
 
 # Large model / weights artifacts
 *.bin

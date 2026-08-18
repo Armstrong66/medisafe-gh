@@ -335,6 +335,13 @@ python app/app.py
 Then open the printed local URL. The app should load without API keys; API keys
 are only needed when you run model/scorer calls.
 
+The Batch Evaluator accepts `.csv`, `.jsonl`, `.ndjson`, and `.json` uploads.
+It expands mixed-language files into per-language evaluation jobs when it sees
+either a `language` column with `prompt`, or language-specific prompt columns
+such as `english_prompt`, `twi_prompt`, and `ghanaian_en_prompt`. Unsupported
+languages are reported as skipped before model calls; if no supported probes are
+found, the batch run aborts before spending provider/API compute.
+
 ### Hugging Face ZeroGPU Note
 
 The G-MASS app does not load local GPU models by default; it uses cloud/API
@@ -517,6 +524,25 @@ For the full 4-model reproducible pilot and report:
 ```powershell
 gmass all --per-domain 3
 ```
+
+---
+
+## Citation
+
+Please cite our work:
+
+```bibtex
+@misc{medisafe_gh2026,
+  title={MediSafe-GH: A Clinical Safety Screen for Medical AI Assistants in Ghanaian Languages},
+  author={Koduah, Joseph Derrick Anane Nti and Asare, Michael Asiedu and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
+  year={2026},
+  howpublished={\url{https://github.com/Armstrong66/medisafe-gh}},
+  note={Africa AI Safety Prize Competition 2026}
+}
+```
+
+---
+
 
 ## Licence
 
