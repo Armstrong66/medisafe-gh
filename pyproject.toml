@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "medisafe-gh"
-version = "0.1.0"
+version = "1.1.0"
 description = "G-MASS: Ghana Medical AI Safety Screen -- cross-lingual safety evaluation for medical AI in Ghanaian languages"
 readme = "README.md"
 requires-python = ">=3.10"

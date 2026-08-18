@@ -184,7 +184,7 @@ def run_language(
     # Need probe_id + language as the unique key since both languages
     # share the same probe_id, and this file accumulates across runs (§2)
     if os.path.exists(scored_out):
-        existing = load_jsonl(scored_out)
+        existing = load_jsonl(scored_out, warn_missing=False)
         completed_lang_keys = {(r["probe_id"], r["language"]) for r in existing}
 
     pending = [p for p in probes if (p["probe_id"], language) not in completed_lang_keys]

@@ -31,6 +31,10 @@ English, Ghanaian English, and Twi.
 - Scorer identities: LlamaGuard3, Gemma, and AfroLM.
 - `SCORER_BACKEND=policy_api` may use Gemini API as the hosted scorer runtime,
   but Gemini is not counted as a scorer identity.
+- Batch evaluation accepts `.csv`, `.jsonl`, `.ndjson`, and `.json` uploads.
+  Files with `language` or language-specific prompt columns are expanded into
+  per-language evaluation jobs; unsupported languages are skipped before model
+  calls and reported in the output.
 - Benchmark charts load real combined results when available; no placeholder
   benchmark numbers are displayed.
 

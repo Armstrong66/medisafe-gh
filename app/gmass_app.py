@@ -10,6 +10,7 @@ model or scorer behavior.
 from __future__ import annotations
 
 import html
+import json
 import os
 import sys
 import tempfile
@@ -74,7 +75,53 @@ REQUIRED_ENV_BY_MODEL = {
     "biomistral": "HF_TOKEN",
 }
 
+APP_VERSION = "1.1.0"
+
+PUBLIC_METRICS_PATH = ROOT / "data" / "public_metrics" / "benchmark_summary.json"
 DEFAULT_RESULTS_PATH = ROOT / "data" / "eval_outputs" / "combined" / "all_models_scored.jsonl"
+
+PROMPT_COLUMNS_BY_LANGUAGE = {
+    "english": [
+        "prompt",
+        "english_prompt",
+        "prompt_en",
+        "source_standard_english",
+        "probe_en",
+        "question_en",
+    ],
+    "twi": [
+        "prompt",
+        "twi_prompt",
+        "prompt_twi",
+        "prompt_twi_validated",
+        "final_approved_twi",
+        "prompt_twi_draft",
+        "probe_twi",
+        "question_twi",
+    ],
+    "ghanaian_en": [
+        "prompt",
+        "ghanaian_en_prompt",
+        "gh_en_prompt",
+        "prompt_ghanaian_en",
+        "final_approved_ghanaian_english",
+        "probe_gh_en",
+        "question_gh_en",
+    ],
+}
+LANGUAGE_ALIASES = {
+    "en": "english",
+    "eng": "english",
+    "english": "english",
+    "tw": "twi",
+    "twi": "twi",
+    "akan": "twi",
+    "gh-en": "ghanaian_en",
+    "gh_en": "ghanaian_en",
+    "ghanaian_en": "ghanaian_en",
+    "ghanaian english": "ghanaian_en",
+    "ghanaian-english": "ghanaian_en",
+}
 
 
 if spaces is not None:
@@ -139,6 +186,125 @@ def _ensure_ready(model_key: str) -> str | None:
     return None
 
 
+def _normalize_language(value) -> str | None:
+    if value is None or pd.isna(value):
+        return None
+    normalized = str(value).strip().lower().replace("_", " ").replace("-", " ")
+    return LANGUAGE_ALIASES.get(normalized) or LANGUAGE_ALIASES.get(normalized.replace(" ", "_"))
+
+
+def _read_probe_file(uploaded_file) -> tuple[pd.DataFrame | None, str | None]:
+    path = Path(uploaded_file.name)
+    suffix = path.suffix.lower()
+
+    try:
+        if suffix in {".jsonl", ".ndjson"}:
+            df = pd.read_json(path, lines=True)
+        elif suffix == ".json":
+            df = pd.read_json(path)
+        else:
+            df = pd.read_csv(path)
+    except Exception as exc:
+        return None, f"Could not read {suffix or 'uploaded'} file: {exc}"
+
+    if df.empty:
+        return None, "Uploaded file contains no rows."
+
+    if "probe_id" not in df.columns:
+        if "id" in df.columns:
+            df["probe_id"] = df["id"]
+        elif "probe" in df.columns:
+            df["probe_id"] = df["probe"]
+        else:
+            df["probe_id"] = [f"PROBE-{i + 1}" for i in range(len(df))]
+
+    return df, None
+
+
+def _build_batch_jobs(df: pd.DataFrame, fallback_language: str) -> tuple[list[dict], list[dict], str | None]:
+    jobs: list[dict] = []
+    skipped: list[dict] = []
+    supported = set(LANGUAGES.values())
+    has_language_column = "language" in df.columns
+    has_generic_prompt = "prompt" in df.columns
+
+    for index, row in df.iterrows():
+        probe_id = str(row.get("probe_id") or f"BATCH-{index + 1}")
+        failure_category = str(row.get("failure_category") or "Harmful Advice Request")
+        disease_domain = str(row.get("disease_domain") or "User supplied")
+
+        if has_generic_prompt:
+            language = _normalize_language(row.get("language")) if has_language_column else fallback_language
+            prompt = row.get("prompt")
+            if language not in supported:
+                skipped.append(
+                    {
+                        "probe_id": probe_id,
+                        "language": row.get("language", ""),
+                        "disease_domain": disease_domain,
+                        "failure_category": failure_category,
+                        "reason": "Unsupported or missing language",
+                    }
+                )
+                continue
+            if prompt is None or pd.isna(prompt) or not str(prompt).strip():
+                skipped.append(
+                    {
+                        "probe_id": probe_id,
+                        "language": language,
+                        "disease_domain": disease_domain,
+                        "failure_category": failure_category,
+                        "reason": "Empty prompt",
+                    }
+                )
+                continue
+            jobs.append(
+                {
+                    "probe_id": probe_id,
+                    "language": language,
+                    "prompt": str(prompt),
+                    "failure_category": failure_category,
+                    "disease_domain": disease_domain,
+                }
+            )
+            continue
+
+        found_prompt = False
+        for language, prompt_columns in PROMPT_COLUMNS_BY_LANGUAGE.items():
+            for prompt_column in prompt_columns:
+                if prompt_column in {"prompt"} or prompt_column not in df.columns:
+                    continue
+                prompt = row.get(prompt_column)
+                if prompt is None or pd.isna(prompt) or not str(prompt).strip():
+                    continue
+                found_prompt = True
+                jobs.append(
+                    {
+                        "probe_id": probe_id,
+                        "language": language,
+                        "prompt": str(prompt),
+                        "failure_category": failure_category,
+                        "disease_domain": disease_domain,
+                    }
+                )
+                break
+
+        if not found_prompt:
+            skipped.append(
+                {
+                    "probe_id": probe_id,
+                    "language": "",
+                    "disease_domain": disease_domain,
+                    "failure_category": failure_category,
+                    "reason": "No supported prompt column found",
+                }
+            )
+
+    if not jobs:
+        return jobs, skipped, "No supported probe prompts were found. No model calls were made."
+    return jobs, skipped, None
+
+
 def run_single_probe(prompt_text: str, language_label: str, model_label: str, failure_category: str):
     prompt_text = (prompt_text or "").strip()
     if not prompt_text:
@@ -169,32 +335,35 @@ def run_single_probe(prompt_text: str, language_label: str, model_label: str, fa
         return _error(str(exc))
 
 
-def run_batch_eval(csv_file, model_label: str, language_label: str, progress=gr.Progress()):
-    if csv_file is None:
-        return None, None, "Upload a CSV file first."
+def run_batch_eval(probe_file, model_label: str, language_label: str, progress=gr.Progress()):
+    if probe_file is None:
+        return None, None, "Upload a CSV or JSONL file first."
 
     model_key = MODEL_OPTIONS[model_label]
     readiness_error = _ensure_ready(model_key)
     if readiness_error:
         return None, None, readiness_error
 
-    language = LANGUAGES[language_label]
-    df = pd.read_csv(csv_file.name)
-    required = {"probe_id", "prompt"}
-    missing = required - set(df.columns)
-    if missing:
-        return None, None, f"CSV is missing required columns: {', '.join(sorted(missing))}"
+    fallback_language = LANGUAGES[language_label]
+    df, load_error = _read_probe_file(probe_file)
+    if load_error:
+        return None, None, load_error
+    jobs, skipped, job_error = _build_batch_jobs(df, fallback_language)
+    if job_error:
+        skipped_df = pd.DataFrame(skipped)
+        return skipped_df if skipped else None, None, job_error
 
     scorer = GMassScorer()
     rows: list[dict] = []
-    total = len(df)
+    total = len(jobs)
 
-    for index, row in df.iterrows():
+    for index, job in enumerate(jobs):
         progress((index + 1) / max(total, 1), desc=f"Evaluating {index + 1}/{total}")
-        probe_id = str(row.get("probe_id") or f"BATCH-{index + 1}")
-        prompt = str(row.get("prompt") or "")
-        failure_category = str(row.get("failure_category") or "Harmful Advice Request")
-        disease_domain = str(row.get("disease_domain") or "User supplied")
+        probe_id = job["probe_id"]
+        language = job["language"]
+        prompt = job["prompt"]
+        failure_category = job["failure_category"]
+        disease_domain = job["disease_domain"]
 
         try:
             prompt_to_send = build_prompt_with_language_instruction(prompt, language)
@@ -240,27 +409,58 @@ def run_batch_eval(csv_file, model_label: str, language_label: str, progress=gr.
             )
 
     results_df = pd.DataFrame(rows)
+    if skipped:
+        results_df = pd.concat(
+            [
+                results_df,
+                pd.DataFrame(
+                    [
+                        {
+                            "probe_id": item["probe_id"],
+                            "model_id": model_key,
+                            "language": item["language"],
+                            "disease_domain": item["disease_domain"],
+                            "failure_category": item["failure_category"],
+                            "safety_label": "SKIPPED",
+                            "referral_flag": False,
+                            "hallucination_flag": False,
+                            "agreement": False,
+                            "flag_for_human_review": True,
+                            "response": item["reason"],
+                        }
+                        for item in skipped
+                    ]
+                ),
+            ],
+            ignore_index=True,
+        )
     scored = [row for row in rows if row["safety_label"] in {"SAFE", "UNSAFE"}]
     profile = full_model_profile(scored, model_key) if scored else {}
-    summary = _batch_summary(profile, len(scored), len(rows) - len(scored), model_label, language_label)
+    summary = _batch_summary(
+        profile,
+        len(scored),
+        len(rows) - len(scored),
+        len(skipped),
+        model_label,
+    )
 
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
     results_df.to_csv(tmp.name, index=False)
     return results_df, tmp.name, summary
 
 
-def _batch_summary(profile: dict, scored_count: int, error_count: int, model_label: str, language_label: str) -> str:
+def _batch_summary(profile: dict, scored_count: int, error_count: int, skipped_count: int, model_label: str) -> str:
     if not profile:
-        return f"No probes were scored. Errors: {error_count}."
+        return f"No probes were scored. Errors: {error_count}. Skipped before model calls: {skipped_count}."
     return f"""
 ### G-MASS Batch Summary
 
 | Field | Value |
 |---|---|
 | Model | {model_label} |
-| Language | {language_label} |
 | Scored probes | {scored_count} |
 | Errors | {error_count} |
+| Skipped before model calls | {skipped_count} |
 | CSR English | {profile.get("csr_en")} |
 | CSR Twi | {profile.get("csr_twi")} |
 | CSR GH-EN | {profile.get("csr_gh_en")} |
@@ -273,10 +473,23 @@ These values are evaluation signals, not clinical deployment certification.
 """
 
 
-def _load_profiles_from_results(path: Path = DEFAULT_RESULTS_PATH) -> dict[str, dict]:
+def _load_profiles_from_results(
+    path: Path = DEFAULT_RESULTS_PATH,
+    public_metrics_path: Path = PUBLIC_METRICS_PATH,
+) -> dict[str, dict]:
+    if public_metrics_path.exists():
+        try:
+            with open(public_metrics_path, encoding="utf-8") as f:
+                data = json.load(f)
+                profiles = data.get("profiles", {})
+                if profiles:
+                    return profiles
+        except Exception:
+            pass
+
     if not path.exists():
         return {}
-    records = load_jsonl(str(path))
+    records = load_jsonl(str(path), warn_missing=False)
     profiles = {}
     for model_id in sorted({row.get("model_id") for row in records if row.get("model_id")}):
         model_rows = [row for row in records if row.get("model_id") == model_id]
@@ -378,11 +591,11 @@ CSS = """
 footer { display: none !important; }
 """
 
-with gr.Blocks(title="G-MASS", theme=gr.themes.Soft(), css=CSS) as demo:
+with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(), css=CSS) as demo:
     gr.HTML(
         """
         <div class="gmass-header">
-          <h1>G-MASS: Ghana Medical AI Safety Screen</h1>
+          <h1>G-MASS: Ghana Medical AI Safety Screen <span style="font-size:14px;color:#c9a84c;vertical-align:middle;border:1px solid #c9a84c;border-radius:12px;padding:2px 8px;margin-left:8px;font-weight:normal">v1.1.0</span></h1>
           <p>Open cross-lingual safety evaluation for medical AI in Ghanaian languages.</p>
         </div>
         """
@@ -440,17 +653,17 @@ with gr.Blocks(title="G-MASS", theme=gr.themes.Soft(), css=CSS) as demo:
             )
 
         with gr.Tab("Batch Evaluator"):
-            gr.Markdown("Upload a CSV with required columns `probe_id` and `prompt`.")
+            gr.Markdown("Upload CSV/JSONL probes. Files with `language` or language-specific prompt columns are evaluated per row/column; the dropdown is only a fallback for plain `prompt` files.")
             with gr.Row():
                 with gr.Column():
-                    csv_in = gr.File(label="Probe CSV", file_types=[".csv"])
+                    probe_in = gr.File(label="Probe file", file_types=[".csv", ".jsonl", ".ndjson", ".json"])
                     batch_model = gr.Dropdown(
                         label="Model to evaluate",
                         choices=list(MODEL_OPTIONS.keys()),
                         value=list(MODEL_OPTIONS.keys())[0],
                     )
                     batch_language = gr.Dropdown(
-                        label="Language",
+                        label="Fallback language",
                         choices=list(LANGUAGES.keys()),
                         value="English",
                     )
@@ -461,7 +674,7 @@ with gr.Blocks(title="G-MASS", theme=gr.themes.Soft(), css=CSS) as demo:
             batch_table = gr.Dataframe(label="Scored results", wrap=True)
             batch_button.click(
                 run_batch_eval,
-                inputs=[csv_in, batch_model, batch_language],
+                inputs=[probe_in, batch_model, batch_language],
                 outputs=[batch_table, batch_file, batch_summary],
             )
 
