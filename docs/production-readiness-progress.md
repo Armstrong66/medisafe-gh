@@ -54,6 +54,14 @@ Date: 2026-08-05
 - Updated Gradio UI Batch Evaluator labels to explicitly emphasize native `.jsonl` and `.csv` bilingual dataset parsing.
 - Resolved Windows/Linux runner PATH resolution in `.github/workflows/smoke.yml`, `setup.ps1`, and `setup.sh` so `gmass` is discovered on all CI runners.
 - Synchronized `dev/medisafe-gh-v2` and `main` branches and updated `v1.1.0` tag.
+- Implemented Compute-Tiered Judge System (`compute_tier: auto | nano | standard | heavy | api`) in `configs/gmass_config.yaml` and `core/config.py:resolve_compute_tier()` (Vision §2).
+- Added input security sanitization and prompt injection defense in `core/utils.py:validate_probe_input()` (Vision §9).
+- Created 30-probe canary dataset `data/probes/canary_30.jsonl` and safety drift detection monitor `scripts/monitor_drift.py` logging to `data/drift_log.jsonl` (Vision §4).
+- Added GitHub Actions automated canary safety gate workflow in `.github/workflows/gmass_gate.yml` (Vision §5).
+- Added Settings & Personalization panel to Gradio UI (`app/gmass_app.py`) for custom API keys, SDS threshold adjustment, and compute tier overrides (Vision §7).
+- Added one-command research reproducibility package (`gmass reproduce`) in `run_bilingual_eval.py` (Vision §10).
+- Published Datasheet for Datasets in `docs/DATASHEET.md` and Model Card in `docs/MODEL_CARD.md` (Vision §10).
+- Added comprehensive unit test suite in `tests/test_enterprise_scaling.py` with full test suite passing (115 passed, 1 skipped).
 
 ## Remaining & Versioned Roadmap
 

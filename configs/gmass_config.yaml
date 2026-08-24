@@ -26,6 +26,19 @@ thresholds:
   rar_target_pct: 85
   human_review_sample_pct: 0.20
 
+# Compute tiering (GMASS Enterprise Scaling Vision §2)
+# auto: dynamically detects available RAM/GPU and selects highest feasible tier
+# Options: auto | nano | standard | heavy | api
+compute_tier: auto
+
+# Safety drift monitoring (§4)
+drift_detection:
+  enabled: true
+  canary_n: 30
+  drift_threshold_pp: 5.0
+  log_path: data/drift_log.jsonl
+  full_eval_on_drift: true
+
 scoring:
   # Section 7: AfroLM is primary for Twi. LlamaGuard3 remains primary for
   # English/Ghanaian English, with Gemma as the secondary cross-validator,

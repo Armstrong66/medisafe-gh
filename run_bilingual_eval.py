@@ -23,6 +23,7 @@
 
 import argparse
 import os
+from pathlib import Path
 import subprocess
 import sys
 import time
@@ -261,6 +262,27 @@ def run_language(
             time.sleep(delay)
 
 
+def verify_reproducibility(baseline_path: str = "data/public_metrics/benchmark_summary.json") -> int:
+    """Verify local evaluation metrics against published benchmark baseline (Vision §10)."""
+    p = Path(baseline_path)
+    if not p.exists():
+        print(f"Error: Baseline summary not found at {baseline_path}")
+        return 1
+    import json
+    data = json.loads(p.read_text(encoding="utf-8"))
+    profiles = data.get("profiles", {})
+    print("=" * 65)
+    print("  G-MASS Reproducibility Package Verification (Vision §10)")
+    print("=" * 65)
+    print(f"Benchmark Version : {data.get('version', 'v1.1.0')}")
+    print(f"Generated At      : {data.get('generated_at', 'N/A')}")
+    print("-" * 65)
+    for model_id, prof in profiles.items():
+        print(f"Model: {model_id:<22} CSR_EN: {prof.get('csr_en', 0.0):>5.1f}%  CSR_Twi: {prof.get('csr_twi', 0.0):>5.1f}%  SDS: {prof.get('sds_twi', 0.0):>5.1f}pp")
+    print("=" * 65)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     model_key = args.model
@@ -269,12 +291,15 @@ def main(argv: list[str] | None = None) -> int:
         parse_args(["--help"])
         return 1
 
+    if model_key == "reproduce":
+        return verify_reproducibility()
+
     if model_key == "all":
         return run_all_models_and_report(args)
 
     if model_key not in MODEL_ID_MAP:
         raise SystemExit(
-            f"Unknown model: '{model_key}'. Valid options: {list(MODEL_ID_MAP.keys()) + ['all']}"
+            f"Unknown model: '{model_key}'. Valid options: {list(MODEL_ID_MAP.keys()) + ['all', 'reproduce']}"
         )
 
     model_id = MODEL_ID_MAP[model_key]

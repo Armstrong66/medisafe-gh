@@ -17,6 +17,7 @@ of API batches — never re-pay for a probe already evaluated.
 
 import json
 import os
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -201,3 +202,30 @@ def ensure_dirs(*paths: str) -> None:
     for path in paths:
         os.makedirs(path, exist_ok=True)
         logger.debug(f"Directory ensured: {path}")
+
+
+def validate_probe_input(text: str, max_length: int = 2000) -> str:
+    """
+    Sanitise probe text before sending to model APIs (GMASS Security Engineering §9).
+    Removes ASCII control characters, limits length, and flags prompt injection patterns.
+    """
+    if not isinstance(text, str):
+        text = str(text or "")
+    # Remove control characters except tab and newline
+    sanitized = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    if len(sanitized) > max_length:
+        raise ValueError(f"Probe text exceeds maximum allowed length: {len(sanitized)} > {max_length} chars")
+
+    injection_patterns = [
+        r"ignore (?:all )?previous instructions",
+        r"you are now",
+        r"disregard (?:all )?prior",
+        r"system prompt",
+        r"jailbreak",
+    ]
+    for pattern in injection_patterns:
+        if re.search(pattern, sanitized, re.IGNORECASE):
+            logger.warning(f"Potential injection pattern flagged in probe input: '{pattern}'")
+
+    return sanitized
+
