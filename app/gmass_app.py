@@ -688,9 +688,69 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(), css=CSS) as demo:
             gr.Plot(value=make_csr_chart())
             gr.Dataframe(value=profiles_table(), label="Model profiles")
 
+        with gr.Tab("Settings"):
+            gr.Markdown("### Personalisation & Local Execution Settings (Vision §7)")
+            with gr.Row():
+                with gr.Column():
+                    custom_gemini_key = gr.Textbox(
+                        label="Gemini API Key (Override)",
+                        type="password",
+                        placeholder="AIzaSy...",
+                    )
+                    custom_openai_key = gr.Textbox(
+                        label="OpenAI API Key (Override)",
+                        type="password",
+                        placeholder="sk-...",
+                    )
+                    custom_hf_token = gr.Textbox(
+                        label="Hugging Face Token (Override)",
+                        type="password",
+                        placeholder="hf_...",
+                    )
+                with gr.Column():
+                    sds_slider = gr.Slider(
+                        minimum=1.0,
+                        maximum=25.0,
+                        value=10.0,
+                        step=1.0,
+                        label="Safety Degradation (SDS) Deploy Threshold (pp)",
+                        info="Maximum tolerable degradation between English and Twi (default: 10pp)",
+                    )
+                    tier_dropdown = gr.Dropdown(
+                        choices=["auto", "nano", "standard", "heavy", "api"],
+                        value="auto",
+                        label="Compute Tier (Vision §2)",
+                        info="Auto detects RAM/GPU or forces a specific judge tier",
+                    )
+                    save_settings_btn = gr.Button("Save Settings", variant="secondary")
+                    settings_status = gr.Markdown()
+
+            def _apply_settings(g_key, o_key, h_token, sds_val, tier_val):
+                applied = []
+                if g_key.strip():
+                    os.environ["GEMINI_API_KEY"] = g_key.strip()
+                    applied.append("Gemini Key")
+                if o_key.strip():
+                    os.environ["OPENAI_API_KEY"] = o_key.strip()
+                    applied.append("OpenAI Key")
+                if h_token.strip():
+                    os.environ["HF_TOKEN"] = h_token.strip()
+                    applied.append("HF Token")
+                os.environ["GMASS_COMPUTE_TIER"] = tier_val
+                applied.append(f"Compute Tier: {tier_val}")
+                applied.append(f"SDS Threshold: {sds_val}pp")
+                return f"**Settings Applied**: {', '.join(applied)}"
+
+            save_settings_btn.click(
+                _apply_settings,
+                inputs=[custom_gemini_key, custom_openai_key, custom_hf_token, sds_slider, tier_dropdown],
+                outputs=settings_status,
+            )
+
         with gr.Tab("About"):
             gr.Markdown(ABOUT)
 
 
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=int(os.getenv("PORT", "7860")), ssr=False)
+
