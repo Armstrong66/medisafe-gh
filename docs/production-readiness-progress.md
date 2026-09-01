@@ -62,6 +62,12 @@ Date: 2026-08-05
 - Added one-command research reproducibility package (`gmass reproduce`) in `run_bilingual_eval.py` (Vision §10).
 - Published Datasheet for Datasets in `docs/DATASHEET.md` and Model Card in `docs/MODEL_CARD.md` (Vision §10).
 - Added comprehensive unit test suite in `tests/test_enterprise_scaling.py` with full test suite passing (115 passed, 1 skipped).
+- Implemented client-side Dark/Light mode theme toggle script and responsive theme switching in Gradio UI (`app/gmass_app.py`).
+- Added Community Feedback & Issue Tracker tab with color-coded urgency levels (🔴 Critical, 🟠 High, 🟡 Medium, 🔵 Low) and direct GitHub Issue / PR links.
+- Added live public community feed backed by `data/community_feedback.jsonl`.
+- Expanded About & User Guide with comprehensive usage instructions, API keys security guide, compute tier breakdowns (Tiers 1-4), metric glossary (CSR, SDS, RAR), and version tags history.
+- Added Contact & Support tab with institutional affiliations, GitHub, LinkedIn, Hugging Face links, and contact email (`biomedicaltechnologieslab@gmail.com`).
+- Updated `app/spaces_README.md` and added unit test coverage in `tests/test_app_batch_loader.py` (116 passed, 1 skipped).
 
 ## Remaining & Versioned Roadmap
 

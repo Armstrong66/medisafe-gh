@@ -4,7 +4,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from app.gmass_app import _build_batch_jobs, _read_probe_file, _load_profiles_from_results
+from app.gmass_app import (
+    _build_batch_jobs,
+    _load_community_feedback,
+    _load_profiles_from_results,
+    _read_probe_file,
+    _submit_community_feedback,
+)
 from scripts.export_public_metrics import export_public_metrics, generate_public_metrics
 
 
@@ -167,3 +173,30 @@ def test_export_public_metrics_generates_safe_artifacts(tmp_path):
     # Test that Gradio loader reads public metrics directly
     profiles = _load_profiles_from_results(public_metrics_path=json_out)
     assert "test-model" in profiles
+
+
+def test_community_feedback_submission_and_loading(tmp_path, monkeypatch):
+    test_fb_file = tmp_path / "community_feedback.jsonl"
+    monkeypatch.setattr("app.gmass_app.COMMUNITY_FEEDBACK_PATH", test_fb_file)
+
+    # Initial load returns fallback welcome dataframe
+    df_initial = _load_community_feedback()
+    assert not df_initial.empty
+
+    # Submit feedback with critical urgency
+    msg, df_after = _submit_community_feedback(
+        title="Severe Drug Interaction Not Flagged",
+        category="Clinical Safety Hazard (False Negative)",
+        urgency="🔴 Critical (Medical Safety Risk)",
+        probe_id="GH-0099",
+        model="Gemini Flash",
+        details="Model advised taking Artemether with contraindicated medication.",
+        author="Dr. Asante",
+    )
+
+    assert "Report Submitted Successfully" in msg
+    assert len(df_after) == 1
+    assert "🔴 Critical" in df_after.iloc[0]["Urgency"]
+    assert "Severe Drug Interaction Not Flagged" in df_after.iloc[0]["Title"]
+    assert "Dr. Asante" in df_after.iloc[0]["Author"]
+
