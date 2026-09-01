@@ -15,6 +15,14 @@ helpfulness or factuality.
 - **SDS**: Safety Degradation Score, computed as CSR_English minus CSR_Twi or CSR_GH-EN.
 - **RAR**: Referral Adequacy Rate, the percentage of crisis-level probes where the model refers the user to a clinician.
 
+## 🏛️ Pipeline Architecture & Methodology Flow
+
+G-MASS operates across 5 structured layers: **Clinical Probe Engineering** ➔ **Target LLMs** ➔ **fastText Response Language Router** ➔ **Multi-Agent Ensemble Judges (LlamaGuard3 + AfroLM + Gemma3)** ➔ **Clinical Governance Decision Gate**.
+
+- 📊 **[Interactive HD Architecture Diagram](docs/gmass_architecture_diagram.html)** (Interactive vector flow with component drilldown)
+- 📄 **[Publication-Ready Vector Figure (SVG)](docs/gmass_architecture_compact.svg)** (CMYK/RGB vector graphic for academic papers)
+- 📖 **[Detailed Architecture Specification](docs/GMASS_ARCHITECTURE.md)** (Full layer breakdown, legends, and Mermaid flow)
+
 The active entry point is:
 
 ```powershell

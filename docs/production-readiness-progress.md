@@ -69,6 +69,7 @@ Date: 2026-08-05
 - Added Contact & Support tab with institutional affiliations, GitHub, LinkedIn, Hugging Face links, and contact email (`biomedicaltechnologieslab@gmail.com`).
 - Updated `app/spaces_README.md` and added unit test coverage in `tests/test_app_batch_loader.py` (116 passed, 1 skipped).
 - Pushed commit `2e965a8` to `dev/medisafe-gh-v2`, merged into `main`, pushed to `origin/main`, and deployed commit `c0da4af` to Hugging Face Spaces (`BioinstLab/gmass-demo`).
+- Created research-grade architectural flow diagram and methodological framework in `docs/gmass_architecture_diagram.html` and `docs/GMASS_ARCHITECTURE.md` with iconic visual layers, multi-agent judge panels, and full research legends.
 
 ## Remaining & Versioned Roadmap
 

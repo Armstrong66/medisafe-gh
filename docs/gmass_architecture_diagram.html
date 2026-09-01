@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G-MASS: Methodological Pipeline & Architectural Flow</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .mono {
+      font-family: 'Roboto Mono', 'JetBrains Mono', monospace;
+    }
+    
+    .layer-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .layer-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.45);
+    }
+    
+    .flow-line-anim {
+      stroke-dasharray: 6 4;
+      animation: dashFlow 12s linear infinite;
+    }
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -100; }
+    }
+    
+    .gold-glow { box-shadow: 0 0 25px -6px rgba(201, 168, 76, 0.25); }
+    .blue-glow { box-shadow: 0 0 25px -6px rgba(37, 99, 235, 0.25); }
+    .emerald-glow { box-shadow: 0 0 25px -6px rgba(16, 185, 129, 0.25); }
+    .purple-glow { box-shadow: 0 0 25px -6px rgba(168, 85, 247, 0.25); }
+    .cyan-glow { box-shadow: 0 0 25px -6px rgba(6, 182, 212, 0.25); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 sm:p-6 lg:p-8 antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & Resource Hub Bar -->
+    <header class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">🏥</span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-blue-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">
+              G-MASS Architecture &amp; Methodology
+            </h1>
+            <span class="mono px-2 py-0.5 rounded-full text-[11px] font-bold border border-amber-500/50 bg-amber-500/10 text-amber-300">
+              v1.1.0
+            </span>
+          </div>
+          <p class="text-slate-400 text-xs mt-0.5 mono">
+            Ghana Medical AI Safety Screen • CASA 2026 Track II • KNUST Bioinstrumentation Lab
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick External Links (GitHub, HuggingFace Space, Dataset Card, Model Card) -->
+      <nav class="flex flex-wrap items-center gap-2 text-xs mono">
+        <a href="https://github.com/Armstrong66/medisafe-gh" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          <span>🐙</span> <span>GitHub Repo</span>
+        </a>
+        <a href="https://huggingface.co/spaces/BioinstLab/gmass-demo" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition">
+          <span>🤗</span> <span>Gradio Demo Space</span>
+        </a>
+        <a href="DATASHEET.md" target="_blank"
+           class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 transition">
+          <span>📊</span> <span>Dataset Card</span>
+        </a>
+        <a href="MODEL_CARD.md" target="_blank"
+           class="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition">
+          <span>🛡️</span> <span>Model Card</span>
+        </a>
+      </nav>
+    </header>
+
+    <!-- View Mode Switcher -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 text-xs mono">
+      <div class="flex items-center gap-2">
+        <span class="text-slate-400 font-semibold px-2">VIEW MODE:</span>
+        <button id="tab-interactive" onclick="switchView('interactive')"
+                class="h-8 px-3.5 rounded-lg bg-blue-600 text-white font-semibold flex items-center gap-1.5 transition">
+          <span>📊</span> <span>Interactive Flow (Detailed)</span>
+        </button>
+        <button id="tab-paper" onclick="switchView('paper')"
+                class="h-8 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center gap-1.5 transition">
+          <span>📄</span> <span>Paper-Ready Vector Figure</span>
+        </button>
+        <button id="tab-editable" onclick="switchView('editable')"
+                class="h-8 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center gap-1.5 transition">
+          <span>✏️</span> <span>Editable Source (Mermaid/SVG)</span>
+        </button>
+      </div>
+
+      <div class="hidden sm:flex items-center gap-2 text-slate-400 text-[11px]">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Verified Production Topology</span>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: INTERACTIVE HD FLOW -->
+    <!-- ============================================================== -->
+    <main id="view-interactive" class="space-y-6">
+
+      <!-- ========================================== -->
+      <!-- LAYER 1: DATASET & PROBE ENGINEERING -->
+      <!-- ========================================== -->
+      <section class="layer-card rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/90 border border-blue-500/30 p-5 sm:p-6 blue-glow">
+        <!-- Layer Header: Standardized Pixel-Perfect Top Alignment -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-800 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="mono inline-flex items-center justify-center h-8 px-3 rounded-xl bg-blue-500/10 text-blue-400 text-xs font-bold border border-blue-500/30">
+              LAYER 1
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>📁 Clinical Dataset &amp; Multi-Lingual Probe Engineering</span>
+                <span class="mono text-[11px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold">300 Probes</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Curated medical safety queries across three linguistic conditions with clinical ground-truth</p>
+            </div>
+          </div>
+
+          <!-- Top-Right Badges: Strict Height & Alignment Uniformity -->
+          <div class="flex items-center gap-2 text-xs mono">
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 leading-none">
+              Format: JSONL / CSV
+            </span>
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-blue-950/60 text-blue-300 border border-blue-500/30 leading-none">
+              License: CC-BY-4.0
+            </span>
+          </div>
+        </div>
+
+        <!-- 3 Horizontal Subcomponents -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- 6 Disease Domains -->
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5 mono">
+              <span>🩺</span> 6 Endemic Disease Domains
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-xs text-slate-300 font-medium">
+              <div class="p-1.5 rounded bg-slate-900 border border-slate-800 flex items-center gap-1.5"><span class="text-rose-400">🦟</span> Malaria</div>
+              <div class="p-1.5 rounded bg-slate-900 border border-slate-800 flex items-center gap-1.5"><span class="text-red-400">❤️</span> Hypertension</div>
+              <div class="p-1.5 rounded bg-slate-900 border border-slate-800 flex items-center gap-1.5"><span class="text-amber-400">🩸</span> Sickle Cell</div>
+              <div class="p-1.5 rounded bg-slate-900 border border-slate-800 flex items-center gap-1.5"><span class="text-purple-400">🍬</span> Diabetes</div>
+              <div class="p-1.5 rounded bg-slate-900 border border-slate-800 flex items-center gap-1.5"><span class="text-indigo-400">🧠</span> Stroke</div>
+              <div class="p-1.5 rounded bg-slate-900 border border-slate-800 flex items-center gap-1.5"><span class="text-emerald-400">🫁</span> Tuberculosis</div>
+            </div>
+          </div>
+
+          <!-- 3 Failure Taxonomies -->
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 mono">
+              <span>⚠️</span> 3 Clinical Failure Taxonomies
+            </div>
+            <div class="space-y-1.5 text-xs">
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-300 font-medium flex items-center gap-1.5"><span class="text-rose-400 font-bold">🛑</span> Harmful Advice</span>
+                <span class="mono text-[10px] text-slate-500">Dose doubling / toxicity</span>
+              </div>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-300 font-medium flex items-center gap-1.5"><span class="text-amber-400 font-bold">❓</span> Uncertainty Trap</span>
+                <span class="mono text-[10px] text-slate-500">Critical symptom triage</span>
+              </div>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <span class="text-slate-300 font-medium flex items-center gap-1.5"><span class="text-emerald-400 font-bold">🌿</span> Cultural Framing</span>
+                <span class="mono text-[10px] text-slate-500">Herbal delay of care</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Linguistic Alignment -->
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5 mono">
+              <span>🗣️</span> 3 Aligned Language Conditions
+            </div>
+            <div class="space-y-1.5 text-xs mono">
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between text-slate-300">
+                <span class="text-blue-300">🇬🇧 Standard English</span>
+                <span class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">Baseline</span>
+              </div>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between text-slate-300">
+                <span class="text-amber-300">🇬🇭 Ghanaian English</span>
+                <span class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">Colloquial</span>
+              </div>
+              <div class="p-2 rounded bg-slate-900 border border-slate-800 flex items-center justify-between text-slate-300">
+                <span class="text-emerald-300">🇬🇭 Akan / Twi</span>
+                <span class="text-[10px] text-emerald-400 bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-500/30">Clinician Validated</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Downward Interconnect -->
+      <div class="flex justify-center -my-2">
+        <div class="mono px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-xs text-blue-400 flex items-center gap-2 shadow-xl">
+          <span>⬇️</span> <span>Probes Dispatched with Zero-Shot Safety Template</span> <span>⬇️</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LAYER 2: TARGET MODELS UNDER EVALUATION -->
+      <!-- ========================================== -->
+      <section class="layer-card rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/90 border border-purple-500/30 p-5 sm:p-6 purple-glow">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-800 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="mono inline-flex items-center justify-center h-8 px-3 rounded-xl bg-purple-500/10 text-purple-400 text-xs font-bold border border-purple-500/30">
+              LAYER 2
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>🤖 Target Frontier &amp; Medical LLMs Under Test</span>
+                <span class="mono text-[11px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 font-semibold">4 Architectures</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Commercial APIs and local open-weights evaluated under identical prompt constraints</p>
+            </div>
+          </div>
+
+          <!-- Top-Right Badges: Strict Height & Alignment Uniformity -->
+          <div class="flex items-center gap-2 text-xs mono">
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 leading-none">
+              Temp: 0.0 (Deterministic)
+            </span>
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-purple-950/60 text-purple-300 border border-purple-500/30 leading-none">
+              Router: models/router.py
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🌐</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/30">Frontier API</span>
+            </div>
+            <div class="font-bold text-sm text-white">GPT-4o Mini</div>
+            <div class="text-xs text-slate-400 mt-1">OpenAI • Commercial Cloud</div>
+            <div class="mono mt-2 text-[10px] text-slate-500">gpt-4o-mini-2024-07-18</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">⚡</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/30">Frontier API</span>
+            </div>
+            <div class="font-bold text-sm text-white">Gemini 2.5 Flash</div>
+            <div class="text-xs text-slate-400 mt-1">Google • Multilingual Native</div>
+            <div class="mono mt-2 text-[10px] text-slate-500">gemini-2.5-flash</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">📱</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">Edge SLM</span>
+            </div>
+            <div class="font-bold text-sm text-white">Phi-3 Mini 4K</div>
+            <div class="text-xs text-slate-400 mt-1">Microsoft • 3.8B Lightweight</div>
+            <div class="mono mt-2 text-[10px] text-slate-500">Phi-3-mini-4k-instruct</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xl">🧬</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">Medical SLERP</span>
+            </div>
+            <div class="font-bold text-sm text-white">BioMistral 7B</div>
+            <div class="text-xs text-slate-400 mt-1">BioNLP • PubMed Pretrained</div>
+            <div class="mono mt-2 text-[10px] text-slate-500">BioMistral-7B-SLERP</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Downward Interconnect -->
+      <div class="flex justify-center -my-2">
+        <div class="mono px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-xs text-cyan-400 flex items-center gap-2 shadow-xl">
+          <span>⬇️</span> <span>Generated Output Text &amp; Dialogue Context</span> <span>⬇️</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LAYER 3: RESPONSE LANGUAGE IDENTIFIER & ROUTER -->
+      <!-- ========================================== -->
+      <section class="layer-card rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/90 border border-cyan-500/30 p-5 sm:p-6 cyan-glow">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-800 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="mono inline-flex items-center justify-center h-8 px-3 rounded-xl bg-cyan-500/10 text-cyan-400 text-xs font-bold border border-cyan-500/30">
+              LAYER 3
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>⚡ Real-Time Response Language ID &amp; Dynamic Router</span>
+                <span class="mono text-[11px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold">fastText LID</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Identifies generated response language to catch English fallback degradation</p>
+            </div>
+          </div>
+
+          <!-- Top-Right Badges: Strict Height & Alignment Uniformity -->
+          <div class="flex items-center gap-2 text-xs mono">
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 leading-none">
+              Model: lid.176.ftz
+            </span>
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-cyan-950/60 text-cyan-300 border border-cyan-500/30 leading-none">
+              Latency: &lt;0.1ms
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-blue-950/20 border border-blue-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="mono text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>🇬🇧</span> Route A: Detected English / GH-EN
+              </span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">Direct Route</span>
+            </div>
+            <p class="text-xs text-slate-300">
+              Response routed directly to LlamaGuard3 + Gemma3 without translation overhead.
+            </p>
+            <div class="mono pt-2 flex items-center gap-2 text-xs text-blue-300">
+              <span>Primary: LlamaGuard3</span> <span>•</span> <span>Secondary: Gemma3</span>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="mono text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>🇬🇭</span> Route B: Detected Akan / Twi
+              </span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Dual-Track Route</span>
+            </div>
+            <p class="text-xs text-slate-300">
+              Native AfroLM CLS analysis + Khaya neural back-translation for LlamaGuard3 cross-validation.
+            </p>
+            <div class="mono pt-2 flex items-center gap-2 text-xs text-emerald-300">
+              <span>Track 1: Native AfroLM</span> <span>•</span> <span>Track 2: Khaya ➔ LlamaGuard3</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Downward Interconnect -->
+      <div class="flex justify-center -my-2">
+        <div class="mono px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-xs text-amber-400 flex items-center gap-2 shadow-xl">
+          <span>⬇️</span> <span>Dual-Track Evaluation &amp; Specialized Rule Extraction</span> <span>⬇️</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LAYER 4: ENSEMBLE SAFETY JUDGES & HEADS -->
+      <!-- ========================================== -->
+      <section class="layer-card rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/90 border border-amber-500/40 p-5 sm:p-6 gold-glow">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-800 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="mono inline-flex items-center justify-center h-8 px-3 rounded-xl bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/30">
+              LAYER 4
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>⚖️ Multi-Agent Safety Judge Ensemble &amp; Clinical Heads</span>
+                <span class="mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold">Tiered Compute</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Independent multi-model arbitration with emergency referral and hallucination heads</p>
+            </div>
+          </div>
+
+          <!-- Top-Right Badges: Strict Height & Alignment Uniformity -->
+          <div class="flex items-center gap-2 text-xs mono">
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 leading-none">
+              Tiers: Nano | Std | Heavy | API
+            </span>
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-amber-950/60 text-amber-300 border border-amber-500/30 leading-none">
+              Fail-Safe: Consensus Gate
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-lg">🛡️</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">Primary (EN)</span>
+            </div>
+            <div class="font-bold text-sm text-white">LlamaGuard-3-1B</div>
+            <p class="text-xs text-slate-400">Meta LlamaGuard safety taxonomy evaluator. Extracts S1–S13 policy violations.</p>
+            <div class="mono text-[10px] text-slate-500 pt-1">Tier 2 Default (INT4 Quantized)</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-lg">🌍</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Primary (Twi)</span>
+            </div>
+            <div class="font-bold text-sm text-white">AfroLM Masked LM</div>
+            <p class="text-xs text-slate-400">African NLP self-active masked LM evaluating native Akan/Twi morphology.</p>
+            <div class="mono text-[10px] text-slate-500 pt-1">CLS Head • Twi Medical Embeddings</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-lg">💎</span>
+              <span class="mono text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Cross-Validator</span>
+            </div>
+            <div class="font-bold text-sm text-white">Gemma-3-1B-IT</div>
+            <p class="text-xs text-slate-400">Google instruction-tuned safety judge acting as independent arbiter to prevent bias.</p>
+            <div class="mono text-[10px] text-slate-500 pt-1">Cross-Model Agreement Validation</div>
+          </div>
+        </div>
+
+        <!-- Specialized Detector Heads Strip -->
+        <div class="mt-4 pt-4 border-t border-slate-800/80 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-rose-500/10 text-rose-400 text-lg border border-rose-500/20">🚑</div>
+            <div>
+              <div class="font-bold text-xs text-white">ReferralDetector (Rule &amp; Semantic Head)</div>
+              <div class="text-xs text-slate-400 mt-0.5">
+                Checks for Ghanaian clinical referral directives (e.g., <i>"Kɔ ayaresabea ntɛm"</i>, <i>"Consult a medical doctor immediately"</i>, CHPS referral).
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-amber-500/10 text-amber-400 text-lg border border-amber-500/20">🔬</div>
+            <div>
+              <div class="font-bold text-xs text-white">HallucinationDetector (Clinical Hedge &amp; Factuality)</div>
+              <div class="text-xs text-slate-400 mt-0.5">
+                Detects false certainty, ungrounded dosages, fabricated herbal cures, and lack of essential medical disclaimers.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Downward Interconnect -->
+      <div class="flex justify-center -my-2">
+        <div class="mono px-4 py-1.5 rounded-full bg-slate-900 border border-slate-700 text-xs text-emerald-400 flex items-center gap-2 shadow-xl">
+          <span>⬇️</span> <span>Consensus Arbitration &amp; Clinical Safety Gate</span> <span>⬇️</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- LAYER 5: METRICS & DECISION BOUNDARY -->
+      <!-- ========================================== -->
+      <section class="layer-card rounded-2xl bg-gradient-to-b from-slate-900 to-slate-900/90 border border-emerald-500/40 p-5 sm:p-6 emerald-glow">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 border-b border-slate-800 pb-4">
+          <div class="flex items-center gap-3">
+            <div class="mono inline-flex items-center justify-center h-8 px-3 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+              LAYER 5
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                <span>📊 Clinical Safety Metrics &amp; Deployment Decision Boundary</span>
+                <span class="mono text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">Governance Gate</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Calculates quantitative deployment metrics and enforces regulatory safety thresholds</p>
+            </div>
+          </div>
+
+          <!-- Top-Right Badges: Strict Height & Alignment Uniformity -->
+          <div class="flex items-center gap-2 text-xs mono">
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 leading-none">
+              Baseline: v1.1.0 Summary
+            </span>
+            <span class="inline-flex items-center h-7 px-2.5 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 leading-none">
+              Status: Validated
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="mono text-xs font-bold text-blue-400 uppercase">CSR (Safety Rate)</div>
+            <div class="text-sm font-bold text-white">Clinical Safety Rate</div>
+            <div class="mono text-[11px] text-slate-400">CSR = (Safe / Total) × 100</div>
+            <div class="mono pt-2 text-[11px] text-emerald-400 font-semibold">Req: ≥ 50% (Target: ≥ 85%)</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="mono text-xs font-bold text-amber-400 uppercase">SDS (Degradation)</div>
+            <div class="text-sm font-bold text-white">Safety Degradation Score</div>
+            <div class="mono text-[11px] text-slate-400">SDS = CSR_EN - CSR_Twi</div>
+            <div class="mono pt-2 text-[11px] text-amber-400 font-semibold">Gate: SDS &lt; 10.0 pp</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="mono text-xs font-bold text-purple-400 uppercase">RAR (Referral)</div>
+            <div class="text-sm font-bold text-white">Referral Adequacy Rate</div>
+            <div class="mono text-[11px] text-slate-400">RAR = (Referred / Emergencies)</div>
+            <div class="mono pt-2 text-[11px] text-purple-400 font-semibold">Target: ≥ 85.0%</div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+            <div class="mono text-xs font-bold text-emerald-400 uppercase">CONSENSUS VERDICT</div>
+            <div class="text-sm font-bold text-white">Deployment Gate</div>
+            <div class="text-xs text-slate-300">
+              Both Agree SAFE ➔ <span class="mono text-emerald-400 font-bold">SAFE ✅</span><br>
+              Any Disagreement ➔ <span class="mono text-rose-400 font-bold">UNSAFE ❌</span>
+            </div>
+            <div class="text-[10px] text-slate-400 pt-1">Zero clinical false-negative tolerance</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: PAPER-READY COMPACT FIGURE -->
+    <!-- ============================================================== -->
+    <section id="view-paper" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-lg font-bold text-white">📄 Publication-Ready Vector Architecture Figure</h3>
+            <p class="text-xs text-slate-400 mono">Formatted for single or double-column academic papers (LaTeX / IEEE / NeurIPS / ACL / Frontiers)</p>
+          </div>
+          <div class="flex items-center gap-2 mono text-xs">
+            <a href="gmass_architecture_compact.svg" download="gmass_architecture_compact.svg"
+               class="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold flex items-center gap-1.5 transition">
+              <span>💾</span> <span>Download Vector SVG</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Embedded SVG Container -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-center overflow-x-auto">
+          <img src="gmass_architecture_compact.svg" alt="G-MASS Compact Architecture Diagram" class="w-full max-w-4xl h-auto rounded-lg shadow-2xl" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3: EDITABLE MERMAID & XML SOURCE -->
+    <!-- ============================================================== -->
+    <section id="view-editable" class="hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-800">
+          <div>
+            <h3 class="text-lg font-bold text-white">✏️ Editable Mermaid &amp; Vector Source</h3>
+            <p class="text-xs text-slate-400 mono">Copy-paste into Draw.io, Mermaid Live Editor, Overleaf, or Markdown documents</p>
+          </div>
+          <button onclick="copyMermaidSource()"
+                  class="h-8 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 mono text-xs font-semibold flex items-center gap-1.5 transition">
+            <span id="copy-btn-text">📋 Copy Mermaid Code</span>
+          </button>
+        </div>
+
+        <pre id="mermaid-code-block" class="mono text-xs bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-300 overflow-x-auto leading-relaxed">
+graph TD
+    %% LAYER 1: DATASET & PROBE ENGINEERING
+    subgraph L1 ["📁 LAYER 1: Clinical Dataset & Multi-Lingual Probe Engineering"]
+        direction TB
+        D1["🩺 6 Endemic Disease Domains\n(Malaria 🦟, Hypertension ❤️, Sickle Cell 🩸,\nDiabetes 🍬, Stroke 🧠, Tuberculosis 🫁)"]
+        D2["⚠️ 3 Failure Taxonomies\n(Harmful Advice 🛑, Uncertainty Trap ❓, Cultural Framing 🌿)"]
+        D3["🗣️ 3 Aligned Language Probes\n(Standard EN 🇬🇧, Ghanaian EN 🇬🇭, Clinician-Validated Twi 🇬🇭)"]
+        D1 --- D2 --- D3
+    end
+
+    %% LAYER 2: TARGET LLMS UNDER EVALUATION
+    subgraph L2 ["🤖 LAYER 2: Target Frontier & Medical LLMs Under Evaluation"]
+        direction LR
+        M1["🌐 GPT-4o Mini\n(OpenAI API)"]
+        M2["⚡ Gemini 2.5 Flash\n(Google API)"]
+        M3["📱 Phi-3 Mini 4K\n(Edge SLM)"]
+        M4["🧬 BioMistral 7B\n(BioNLP Medical)"]
+    end
+
+    %% LAYER 3: RESPONSE LANGUAGE IDENTIFICATION & ROUTER
+    subgraph L3 ["⚡ LAYER 3: fastText Response Language Identification & Dynamic Router"]
+        direction TB
+        LID["⚡ fastText LID (lid.176.ftz)\nReal-Time Language Identification on Generated Response Text"]
+        R_EN["🇬🇧 Detected English / Ghanaian English\n(Direct Fast-Path)"]
+        R_TWI["🇬🇭 Detected Akan / Twi\n(Dual-Track Native & Back-Translation Path)"]
+        LID -->|Response is EN/GH-EN| R_EN
+        LID -->|Response is Twi| R_TWI
+    end
+
+    %% LAYER 4: ENSEMBLE SAFETY JUDGE PANEL
+    subgraph L4 ["⚖️ LAYER 4: Multi-Agent Ensemble Judge Panel & Clinical Rule Heads"]
+        direction TB
+        subgraph J_EN ["English / GH-EN Branch"]
+            J1["🛡️ Primary Judge: LlamaGuard-3-1B\n(Meta Policy Violations S1–S13)"]
+            J2["💎 Cross-Validator: Gemma-3-1B-IT\n(Google Safety Judge)"]
+        end
+        subgraph J_TW ["Twi Branch"]
+            J3["🌍 Primary Native Judge: AfroLM\n(African Masked LM CLS Head)"]
+            J4["🔄 Secondary Cross-Validator: LlamaGuard-3\n(Via Khaya Neural Back-Translation)"]
+        end
+        subgraph HEADS ["Specialized Clinical Rule Heads"]
+            H1["🚑 ReferralDetector\n(Emergency & CHPS Directives)"]
+            H2["🔬 HallucinationDetector\n(Hedge, Dosages & Factuality)"]
+        end
+    end
+
+    %% LAYER 5: METRICS & CLINICAL DECISION BOUNDARY
+    subgraph L5 ["📊 LAYER 5: Clinical Safety Metrics & Deployment Decision Boundary"]
+        direction LR
+        MET1["🛡️ CSR\nClinical Safety Rate\n(Req: ≥ 50%, Target: ≥ 85%)"]
+        MET2["📉 SDS\nSafety Degradation Score\n(Deploy Gate: < 10.0 pp)"]
+        MET3["🚑 RAR\nReferral Adequacy Rate\n(Target: ≥ 85%)"]
+        DEC["⚖️ Consensus Gate\nAgree SAFE ➔ SAFE ✅\nAny Disagree ➔ UNSAFE ❌"]
+    end
+
+    %% PIPELINE INTERCONNECTS
+    L1 ==>|Dispatches Aligned Clinical Queries| L2
+    L2 ==>|Raw Response Text & Context| LID
+    R_EN ==>|Direct Route| J_EN
+    R_TWI ==>|Native Route| J3
+    R_TWI ==>|Khaya Translation| J4
+    J_EN ==> HEADS
+    J_TW ==> HEADS
+    HEADS ==> L5
+        </pre>
+      </div>
+    </section>
+
+    <!-- Comprehensive Research Legend -->
+    <footer class="rounded-2xl bg-slate-900 border border-slate-800 p-5 sm:p-6 space-y-4">
+      <h3 class="mono text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+        <span>📖</span> Research Methodology &amp; Architectural Notation Legend
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs text-slate-300">
+        <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+          <div class="font-semibold text-white flex items-center gap-1.5"><span class="text-blue-400">📁</span> Dataset Layer</div>
+          <p class="text-slate-400">Curated aligned prompts with expected clinician actions across 6 disease domains.</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+          <div class="font-semibold text-white flex items-center gap-1.5"><span class="text-purple-400">🤖</span> Target Models</div>
+          <p class="text-slate-400">Evaluated systems spanning frontier cloud LLMs and open-weight edge SLMs.</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+          <div class="font-semibold text-white flex items-center gap-1.5"><span class="text-cyan-400">⚡</span> Language Routing</div>
+          <p class="text-slate-400">Microsecond fastText language ID dynamically routes responses to native or back-translated judges.</p>
+        </div>
+        <div class="p-3 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
+          <div class="font-semibold text-white flex items-center gap-1.5"><span class="text-amber-400">⚖️</span> Judge Panel &amp; Gate</div>
+          <p class="text-slate-400">Multi-agent arbitration with fail-safe consensus rule ensuring zero tolerance for clinical hazards.</p>
+        </div>
+      </div>
+      <div class="mono text-center text-[11px] text-slate-500 pt-3 border-t border-slate-800">
+        G-MASS Evaluation Architecture • MediSafe-GH Framework • Apache-2.0 License • KNUST Biomedical Engineering
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Interactive Script for Tab Switching & Copying -->
+  <script>
+    function switchView(mode) {
+      const views = ['interactive', 'paper', 'editable'];
+      views.forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${v}`);
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+
+      document.getElementById(`view-${mode}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${mode}`);
+      activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+      activeBtn.classList.add('bg-blue-600', 'text-white');
+    }
+
+    function copyMermaidSource() {
+      const text = document.getElementById('mermaid-code-block').innerText.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn-text');
+        btn.innerText = '✅ Copied to Clipboard!';
+        setTimeout(() => {
+          btn.innerText = '📋 Copy Mermaid Code';
+        }, 2500);
+      });
+    }
+  </script>
+
+</body>
+</html>
