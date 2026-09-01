@@ -682,6 +682,15 @@ G-MASS provides a tiered judge system to support institutions ranging from edge 
 
 - **v1.1.0 (Current Release)**: Public metric export layer, dynamic dataset autodiscovery, compute tiering, safety drift detection engine, and community issue tracking.
 - **v1.0.0 (Competition Baseline)**: Initial 150-probe bilingual benchmark with LlamaGuard3, AfroLM, and Gemma ensemble.
+
+---
+
+### 🏛️ Methodological Architecture & Visual Flow
+G-MASS utilizes a 5-layer cross-lingual evaluation pipeline connecting multi-lingual probe banks (300 probes), target frontier/edge LLMs, fastText response language routers, multi-agent ensemble judges (LlamaGuard3 + AfroLM + Gemma3), and clinical consensus gates (CSR, SDS, RAR).
+
+- 📊 **[Open Interactive HD Architecture Diagram (Fullscreen)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/gmass_architecture_diagram.html)**
+- 📄 **[Download Publication-Ready Vector Architecture (SVG)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/gmass_architecture_compact.svg)**
+- 📖 **[Detailed Architecture Specification (Markdown)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/GMASS_ARCHITECTURE.md)**
 """
 
 CONTACT_TEXT = """
