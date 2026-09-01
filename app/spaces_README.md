@@ -20,35 +20,49 @@ tags:
 short_description: Medical AI safety eval for Ghanaian languages
 ---
 
-# G-MASS - Ghana Medical AI Safety Screen
+# G-MASS: Ghana Medical AI Safety Screen
+**MediSafe-GH · Track II Africa AI Safety Prize · KNUST Bioinstrumentation & Medical Imaging Laboratory**
 
-G-MASS tests whether AI health assistants respond safely to medical queries in
-English, Ghanaian English, and Twi.
+G-MASS evaluates whether AI health assistants respond safely to clinical queries across **English**, **Ghanaian English**, and **Twi**.
 
-## What This Space Runs
+---
 
-- Evaluated model keys: `gpt4o`, `gemini`, `phi3`, `biomistral`.
-- Scorer identities: LlamaGuard3, Gemma, and AfroLM.
-- `SCORER_BACKEND=policy_api` may use Gemini API as the hosted scorer runtime,
-  but Gemini is not counted as a scorer identity.
-- Batch evaluation accepts `.csv`, `.jsonl`, `.ndjson`, and `.json` uploads.
-  Files with `language` or language-specific prompt columns are expanded into
-  per-language evaluation jobs; unsupported languages are skipped before model
-  calls and reported in the output.
-- Benchmark charts load real combined results when available; no placeholder
-  benchmark numbers are displayed.
+## 🚀 How to Use the Interface
 
-## Required Secrets
+1. **Single Probe Evaluation**: Enter a medical question in English, Ghanaian English, or Twi, choose your target model, and evaluate for immediate safety verdicts, language detection, and clinical referral adequacy.
+2. **Batch Evaluation**: Upload `.jsonl`, `.csv`, `.ndjson`, or `.json` datasets to run evaluations across entire probe sets and download scored CSV reports.
+3. **Benchmark Results**: Inspect empirical Clinical Safety Rates (CSR) and Cross-Lingual Safety Degradation Scores (SDS).
+4. **Settings & Compute Tiers**: Enter custom session API keys, adjust SDS deployment thresholds, or toggle between judge compute tiers.
+5. **Community & Issue Tracker**: Submit clinical safety hazard reports, flag false positives or Twi dialect nuances, and open direct GitHub Issues or Pull Requests.
+6. **Contact & Support**: Reach out to the KNUST research team directly at `biomedicaltechnologieslab@gmail.com`.
 
-- `OPENAI_API_KEY` for GPT-4o.
-- `GEMINI_API_KEY` for Gemini and `SCORER_BACKEND=policy_api`.
-- `HF_TOKEN` for Hugging Face router/open-weight models.
-- `KHAYA_API_KEY` when using hosted Khaya translation.
+---
 
-Outputs are evaluation signals, not clinical deployment certification.
+## ⚙️ Compute Tiers (Vision §2)
 
-## Runtime Note
+G-MASS supports adaptive compute scaling:
 
-This demo uses cloud/API calls and CPU-side orchestration by default. It includes
-a small ZeroGPU compatibility marker for Spaces that are forced onto ZeroGPU,
-but CPU hardware is the intended runtime when available.
+- **Tier 1 (Nano)**: CPU-only FastText + lightweight rule heuristics (~0.3s/probe).
+- **Tier 2 (Standard - Default)**: LlamaGuard3-1B + AfroLM ensemble (~1–2s/probe).
+- **Tier 3 (Heavy)**: 16GB+ VRAM GPU, full LlamaGuard3-8B / Gemma3-7B research ensemble.
+- **Tier 4 (API-only)**: Zero local compute, hosted cloud policy judge.
+
+---
+
+## 🔑 Required & Optional API Keys
+
+- `GEMINI_API_KEY`: Gemini 2.5 Flash evaluation and hosted policy judge.
+- `OPENAI_API_KEY`: GPT-4o / GPT-4o mini evaluations.
+- `HF_TOKEN`: Hugging Face router / open-weight models (Phi-3, BioMistral).
+- `KHAYA_API_KEY`: Real-time Khaya / GhanaNLP translation.
+
+> **Note**: Custom keys can be entered directly in the **Settings** tab for individual sessions without exposing secrets.
+
+---
+
+## 📬 Contact & Support
+
+- **Email**: [biomedicaltechnologieslab@gmail.com](mailto:biomedicaltechnologieslab@gmail.com)
+- **GitHub**: [Armstrong66/medisafe-gh](https://github.com/Armstrong66/medisafe-gh)
+- **Space**: [BioinstLab/gmass-demo](https://huggingface.co/spaces/BioinstLab/gmass-demo)
+- **Institution**: Bioinstrumentation & Medical Imaging Laboratory, Department of Biomedical Engineering, KNUST, Kumasi, Ghana.
