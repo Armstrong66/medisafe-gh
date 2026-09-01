@@ -206,7 +206,7 @@ def ensure_dirs(*paths: str) -> None:
 
 def validate_probe_input(text: str, max_length: int = 2000) -> str:
     """
-    Sanitise probe text before sending to model APIs (GMASS Security Engineering §9).
+    Sanitise probe text before sending to model APIs.
     Removes ASCII control characters, limits length, and flags prompt injection patterns.
     """
     if not isinstance(text, str):

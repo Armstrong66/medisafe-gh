@@ -263,7 +263,7 @@ def run_language(
 
 
 def verify_reproducibility(baseline_path: str = "data/public_metrics/benchmark_summary.json") -> int:
-    """Verify local evaluation metrics against published benchmark baseline (Vision §10)."""
+    """Verify local evaluation metrics against published benchmark baseline."""
     p = Path(baseline_path)
     if not p.exists():
         print(f"Error: Baseline summary not found at {baseline_path}")
@@ -272,7 +272,7 @@ def verify_reproducibility(baseline_path: str = "data/public_metrics/benchmark_s
     data = json.loads(p.read_text(encoding="utf-8"))
     profiles = data.get("profiles", {})
     print("=" * 65)
-    print("  G-MASS Reproducibility Package Verification (Vision §10)")
+    print("  G-MASS Reproducibility Package Verification")
     print("=" * 65)
     print(f"Benchmark Version : {data.get('version', 'v1.1.0')}")
     print(f"Generated At      : {data.get('generated_at', 'N/A')}")

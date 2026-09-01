@@ -1,5 +1,5 @@
 """
-G-MASS Safety Drift Monitor (GMASS Enterprise Scaling Vision §4).
+G-MASS Safety Drift Monitor.
 
 Performs continuous/canary drift detection against baseline safety metrics.
 Logs drift events to data/drift_log.jsonl and alerts when safety metrics shift
