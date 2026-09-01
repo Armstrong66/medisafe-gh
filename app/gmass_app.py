@@ -659,7 +659,7 @@ G-MASS supports evaluation via pre-configured platform secrets or **custom sessi
 
 ---
 
-### ⚙️ Compute Tiers Explained (Vision §2)
+### ⚙️ Compute Tiers Explained
 
 G-MASS provides a tiered judge system to support institutions ranging from edge laptops to GPU clusters:
 
@@ -745,7 +745,7 @@ CSS = """
   font-size: 26px;
 }
 
-.dark .gmass-header h1 {
+.dark .gmass-header h1, body.dark .gmass-header h1 {
   color: #93c5fd !important;
 }
 
@@ -755,7 +755,7 @@ CSS = """
   font-size: 14px;
 }
 
-.dark .gmass-header p {
+.dark .gmass-header p, body.dark .gmass-header p {
   color: #9ca3af !important;
 }
 
@@ -798,7 +798,7 @@ CSS = """
   background: rgba(0, 0, 0, 0.04);
 }
 
-.dark .gmass-card pre {
+.dark .gmass-card pre, body.dark .gmass-card pre {
   background: rgba(0, 0, 0, 0.3) !important;
   color: #e5e7eb !important;
 }
@@ -811,9 +811,33 @@ CSS = """
   color: #78350f;
 }
 
-.dark .gmass-error {
+.dark .gmass-error, body.dark .gmass-error {
   background: #451a03 !important;
   color: #fef3c7 !important;
+}
+
+/* Explicit Dark Theme styles when dark class is applied */
+.dark, body.dark, .gradio-container.dark {
+  background-color: #0f1117 !important;
+  color: #e5e7eb !important;
+}
+
+.dark .gr-panel, .dark .gr-box, .dark .block, body.dark .block {
+  background-color: #1a1d27 !important;
+  border-color: #2d3148 !important;
+  color: #e5e7eb !important;
+}
+
+.dark input, .dark textarea, .dark select, body.dark input, body.dark textarea {
+  background-color: #1e2130 !important;
+  border-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark table, .dark th, .dark td, body.dark table, body.dark th, body.dark td {
+  background-color: #1a1d27 !important;
+  color: #e5e7eb !important;
+  border-color: #2d3148 !important;
 }
 
 .urgency-badge-critical { color: #dc2626; font-weight: bold; }
@@ -826,9 +850,13 @@ footer { display: none !important; }
 
 JS_THEME_INIT = """
 function() {
-    const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme = localStorage.getItem('gmass_theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = savedTheme ? (savedTheme === 'dark') : prefersDark;
     if (isDark) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+        document.querySelectorAll('.gradio-container, .contain, gradio-app').forEach(el => el.classList.add('dark'));
     }
 }
 """
@@ -947,7 +975,7 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
             gr.Dataframe(value=profiles_table(), label="Model Profiles & Cross-Lingual Metrics")
 
         with gr.Tab("Settings & Compute Tiers"):
-            gr.Markdown("### Personalisation, API Credentials & Compute Tiering (Vision §2, §7)")
+            gr.Markdown("### Personalisation, API Credentials & Compute Tiering")
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("#### 🔑 Custom Session API Keys")
@@ -980,7 +1008,7 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
                     tier_dropdown = gr.Dropdown(
                         choices=["auto", "nano", "standard", "heavy", "api"],
                         value="auto",
-                        label="Judge Compute Tier (Vision §2)",
+                        label="Judge Compute Tier",
                         info="auto (auto-detect) | nano (CPU/FastText) | standard (LlamaGuard3-1B+AfroLM) | heavy (8B GPU) | api (Cloud API)",
                     )
                     theme_toggle_btn = gr.Button("🌓 Toggle Dark / Light Mode", variant="secondary")
@@ -988,14 +1016,12 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
                     settings_status = gr.Markdown()
 
             theme_toggle_btn.click(
-                None,
+                fn=None,
                 js="""() => {
-                    const el = document.documentElement;
-                    if (el.classList.contains('dark')) {
-                        el.classList.remove('dark');
-                    } else {
-                        el.classList.add('dark');
-                    }
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    document.body.classList.toggle('dark', isDark);
+                    document.querySelectorAll('.gradio-container, .contain, gradio-app').forEach(el => el.classList.toggle('dark', isDark));
+                    localStorage.setItem('gmass_theme', isDark ? 'dark' : 'light');
                 }"""
             )
 

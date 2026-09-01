@@ -1,5 +1,5 @@
 """
-Unit tests for G-MASS Enterprise Scaling features (Vision §2, §4, §9, §10).
+Unit tests for G-MASS compute tiering, drift monitoring, security, and reproducibility.
 """
 
 import json

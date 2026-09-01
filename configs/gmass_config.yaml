@@ -26,12 +26,12 @@ thresholds:
   rar_target_pct: 85
   human_review_sample_pct: 0.20
 
-# Compute tiering (GMASS Enterprise Scaling Vision §2)
+# Compute tiering
 # auto: dynamically detects available RAM/GPU and selects highest feasible tier
 # Options: auto | nano | standard | heavy | api
 compute_tier: auto
 
-# Safety drift monitoring (§4)
+# Safety drift monitoring
 drift_detection:
   enabled: true
   canary_n: 30

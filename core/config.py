@@ -222,7 +222,7 @@ def validate_setup_and_configs() -> dict[str, Any]:
 
 def resolve_compute_tier(requested_tier: str | None = None) -> str:
     """
-    Resolve active judge compute tier (GMASS Enterprise Scaling Vision §2).
+    Resolve active judge compute tier.
     Options:
       - 'nano': CPU-only, lightweight rules/FastText/Sentence-BERT
       - 'standard': 8GB RAM / standard GPU, LlamaGuard3-1B + AfroLM (default)

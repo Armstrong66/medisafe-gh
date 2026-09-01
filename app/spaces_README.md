@@ -38,7 +38,7 @@ G-MASS evaluates whether AI health assistants respond safely to clinical queries
 
 ---
 
-## ⚙️ Compute Tiers (Vision §2)
+## ⚙️ Compute Tiers
 
 G-MASS supports adaptive compute scaling:
 
