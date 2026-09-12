@@ -15,6 +15,7 @@ import os
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 import gradio as gr
@@ -306,44 +307,77 @@ def _build_batch_jobs(df: pd.DataFrame, fallback_language: str) -> tuple[list[di
     return jobs, skipped, None
 
 
-def run_single_probe(prompt_text: str, language_label: str, model_label: str, failure_category: str):
+@contextmanager
+def isolated_session_env(user_state: dict | None = None):
+    """
+    Temporarily applies user session overrides (API keys, compute tier)
+    strictly within the current call context without permanently altering
+    server-wide os.environ or overriding repository / HF Space secrets.
+    """
+    user_state = user_state or {}
+    overrides: dict[str, str] = {}
+    if user_state.get("gemini_key"):
+        overrides["GEMINI_API_KEY"] = str(user_state["gemini_key"]).strip()
+    if user_state.get("openai_key"):
+        overrides["OPENAI_API_KEY"] = str(user_state["openai_key"]).strip()
+    if user_state.get("hf_token"):
+        overrides["HF_TOKEN"] = str(user_state["hf_token"]).strip()
+    if user_state.get("compute_tier"):
+        overrides["GMASS_COMPUTE_TIER"] = str(user_state["compute_tier"]).strip()
+
+    orig_env = {k: os.environ.get(k) for k in overrides}
+    try:
+        for k, v in overrides.items():
+            os.environ[k] = v
+        yield
+    finally:
+        for k, orig_v in orig_env.items():
+            if orig_v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = orig_v
+
+
+def run_single_probe(prompt_text: str, language_label: str, model_label: str, failure_category: str, session_state: dict | None = None):
     prompt_text = (prompt_text or "").strip()
     if not prompt_text:
         return _error("Enter a medical query first.")
 
-    model_key = MODEL_OPTIONS[model_label]
-    readiness_error = _ensure_ready(model_key)
-    if readiness_error:
-        return _error(readiness_error)
+    with isolated_session_env(session_state):
+        model_key = MODEL_OPTIONS[model_label]
+        readiness_error = _ensure_ready(model_key)
+        if readiness_error:
+            return _error(readiness_error)
 
-    language = LANGUAGES[language_label]
-    probe_id = f"UI-{int(time.time())}"
+        language = LANGUAGES[language_label]
+        probe_id = f"UI-{int(time.time())}"
 
-    try:
-        prompt_to_send = build_prompt_with_language_instruction(prompt_text, language)
-        response = call_model(model_key, prompt_to_send)
-        scorer = GMassScorer()
-        result = scorer.score_one(
-            probe_id=probe_id,
-            model_id=model_key,
-            language=language,
-            failure_category=failure_category,
-            probe_prompt_en=prompt_text,
-            model_response=response,
-        )
-        return _verdict_card(result, model_label, language_label)
-    except Exception as exc:
-        return _error(str(exc))
+        try:
+            prompt_to_send = build_prompt_with_language_instruction(prompt_text, language)
+            response = call_model(model_key, prompt_to_send)
+            scorer = GMassScorer()
+            result = scorer.score_one(
+                probe_id=probe_id,
+                model_id=model_key,
+                language=language,
+                failure_category=failure_category,
+                probe_prompt_en=prompt_text,
+                model_response=response,
+            )
+            return _verdict_card(result, model_label, language_label)
+        except Exception as exc:
+            return _error(str(exc))
 
 
-def run_batch_eval(probe_file, model_label: str, language_label: str, progress=gr.Progress()):
+def run_batch_eval(probe_file, model_label: str, language_label: str, session_state: dict | None = None, progress=gr.Progress()):
     if probe_file is None:
         return None, None, "Upload a CSV or JSONL file first."
 
-    model_key = MODEL_OPTIONS[model_label]
-    readiness_error = _ensure_ready(model_key)
-    if readiness_error:
-        return None, None, readiness_error
+    with isolated_session_env(session_state):
+        model_key = MODEL_OPTIONS[model_label]
+        readiness_error = _ensure_ready(model_key)
+        if readiness_error:
+            return None, None, readiness_error
 
     fallback_language = LANGUAGES[language_label]
     df, load_error = _read_probe_file(probe_file)
@@ -889,6 +923,8 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
     if not GMASS_AVAILABLE:
         gr.Warning(f"G-MASS modules could not be imported: {IMPORT_ERROR}")
 
+    session_state = gr.State(value={})
+
     with gr.Tabs():
         with gr.Tab("Single Probe"):
             with gr.Row():
@@ -919,7 +955,7 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
 
             run_button.click(
                 run_single_probe,
-                inputs=[prompt_in, language_in, model_in, category_in],
+                inputs=[prompt_in, language_in, model_in, category_in, session_state],
                 outputs=result_out,
             )
 
@@ -972,7 +1008,7 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
             batch_table = gr.Dataframe(label="Scored results", wrap=True)
             batch_button.click(
                 run_batch_eval,
-                inputs=[probe_in, batch_model, batch_language],
+                inputs=[probe_in, batch_model, batch_language, session_state],
                 outputs=[batch_table, batch_file, batch_summary],
             )
 
@@ -985,22 +1021,22 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
 
         with gr.Tab("Settings & Compute Tiers"):
             gr.Markdown("### Personalisation, API Credentials & Compute Tiering")
+            gr.Markdown("Credentials entered here are saved locally in **your browser** and applied strictly to **your session**. They never override core platform secrets or affect other users.")
             with gr.Row():
                 with gr.Column():
                     gr.Markdown("#### 🔑 Custom Session API Keys")
-                    gr.Markdown("Keys entered here override platform defaults for your active session and are never logged:")
                     custom_gemini_key = gr.Textbox(
-                        label="Gemini API Key (Override)",
+                        label="Gemini API Key (User Override)",
                         type="password",
                         placeholder="AIzaSy...",
                     )
                     custom_openai_key = gr.Textbox(
-                        label="OpenAI API Key (Override)",
+                        label="OpenAI API Key (User Override)",
                         type="password",
                         placeholder="sk-...",
                     )
                     custom_hf_token = gr.Textbox(
-                        label="Hugging Face Token (Override)",
+                        label="Hugging Face Token (User Override)",
                         type="password",
                         placeholder="hf_...",
                     )
@@ -1020,8 +1056,10 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
                         label="Judge Compute Tier",
                         info="auto (auto-detect) | nano (CPU/FastText) | standard (LlamaGuard3-1B+AfroLM) | heavy (8B GPU) | api (Cloud API)",
                     )
-                    theme_toggle_btn = gr.Button("🌓 Toggle Dark / Light Mode", variant="secondary")
-                    save_settings_btn = gr.Button("💾 Apply Settings", variant="primary")
+                    with gr.Row():
+                        theme_toggle_btn = gr.Button("🌓 Toggle Dark / Light Mode", variant="secondary")
+                        save_settings_btn = gr.Button("💾 Apply & Save Preferences", variant="primary")
+                        clear_settings_btn = gr.Button("🗑️ Clear Saved Settings", variant="stop")
                     settings_status = gr.Markdown()
 
             theme_toggle_btn.click(
@@ -1034,26 +1072,62 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
                 }"""
             )
 
-            def _apply_settings(g_key, o_key, h_token, sds_val, tier_val):
+            def _apply_settings(g_key, o_key, h_token, sds_val, tier_val, state):
+                state = dict(state or {})
+                state["gemini_key"] = (g_key or "").strip()
+                state["openai_key"] = (o_key or "").strip()
+                state["hf_token"] = (h_token or "").strip()
+                state["sds_threshold"] = float(sds_val or 10.0)
+                state["compute_tier"] = str(tier_val or "auto").strip()
+
                 applied = []
-                if g_key.strip():
-                    os.environ["GEMINI_API_KEY"] = g_key.strip()
+                if state["gemini_key"]:
                     applied.append("Gemini API Key")
-                if o_key.strip():
-                    os.environ["OPENAI_API_KEY"] = o_key.strip()
+                if state["openai_key"]:
                     applied.append("OpenAI API Key")
-                if h_token.strip():
-                    os.environ["HF_TOKEN"] = h_token.strip()
+                if state["hf_token"]:
                     applied.append("HF Token")
-                os.environ["GMASS_COMPUTE_TIER"] = tier_val
-                applied.append(f"Compute Tier: `{tier_val}`")
-                applied.append(f"SDS Threshold: `{sds_val}pp`")
-                return f"✅ **Configuration Applied Successfully**: {', '.join(applied)}"
+                applied.append(f"Compute Tier: `{state['compute_tier']}`")
+                applied.append(f"SDS Threshold: `{state['sds_threshold']}pp`")
+
+                msg = (
+                    f"✅ **Preferences Saved for Your Browser Session**: {', '.join(applied)}\n\n"
+                    "*(Settings are stored in your browser local storage and applied exclusively to your requests; "
+                    "shared server secrets are never overwritten)*"
+                )
+                return msg, state
+
+            def _clear_settings():
+                return "", "", "", 10.0, "auto", "⚙️ **Settings Reset**: Browser preferences cleared; system defaults restored.", {}
 
             save_settings_btn.click(
                 _apply_settings,
-                inputs=[custom_gemini_key, custom_openai_key, custom_hf_token, sds_slider, tier_dropdown],
-                outputs=settings_status,
+                inputs=[custom_gemini_key, custom_openai_key, custom_hf_token, sds_slider, tier_dropdown, session_state],
+                outputs=[settings_status, session_state],
+                js="""(g_key, o_key, h_token, sds_val, tier_val, state) => {
+                    const cfg = {
+                        gemini_key: g_key || '',
+                        openai_key: o_key || '',
+                        hf_token: h_token || '',
+                        sds_threshold: sds_val || 10.0,
+                        compute_tier: tier_val || 'auto'
+                    };
+                    try {
+                        localStorage.setItem('gmass_user_config', JSON.stringify(cfg));
+                    } catch(e) {}
+                    return [g_key, o_key, h_token, sds_val, tier_val, cfg];
+                }"""
+            )
+
+            clear_settings_btn.click(
+                _clear_settings,
+                outputs=[custom_gemini_key, custom_openai_key, custom_hf_token, sds_slider, tier_dropdown, settings_status, session_state],
+                js="""() => {
+                    try {
+                        localStorage.removeItem('gmass_user_config');
+                    } catch(e) {}
+                    return [];
+                }"""
             )
 
         with gr.Tab("Community & Issue Tracker"):
@@ -1121,6 +1195,41 @@ with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), 
 
         with gr.Tab("Contact & Support"):
             gr.Markdown(CONTACT_TEXT)
+
+    def _restore_session_from_client(g_key, o_key, h_token, sds_val, tier_val, state):
+        state = dict(state or {})
+        state["gemini_key"] = (g_key or "").strip()
+        state["openai_key"] = (o_key or "").strip()
+        state["hf_token"] = (h_token or "").strip()
+        state["sds_threshold"] = float(sds_val or 10.0)
+        state["compute_tier"] = str(tier_val or "auto").strip()
+
+        has_custom = bool(state["gemini_key"] or state["openai_key"] or state["hf_token"] or (state["compute_tier"] and state["compute_tier"] != "auto"))
+        msg = "⚡ **User Preferences Restored**: Saved credentials and compute tier loaded from your browser." if has_custom else ""
+        return g_key, o_key, h_token, sds_val, tier_val, msg, state
+
+    demo.load(
+        fn=_restore_session_from_client,
+        inputs=[custom_gemini_key, custom_openai_key, custom_hf_token, sds_slider, tier_dropdown, session_state],
+        outputs=[custom_gemini_key, custom_openai_key, custom_hf_token, sds_slider, tier_dropdown, settings_status, session_state],
+        js="""(g_key, o_key, h_token, sds_val, tier_val, state) => {
+            try {
+                const raw = localStorage.getItem('gmass_user_config');
+                if (raw) {
+                    const c = JSON.parse(raw);
+                    return [
+                        c.gemini_key || '',
+                        c.openai_key || '',
+                        c.hf_token || '',
+                        c.sds_threshold !== undefined ? c.sds_threshold : 10.0,
+                        c.compute_tier || 'auto',
+                        c
+                    ];
+                }
+            } catch(e) {}
+            return ['', '', '', 10.0, 'auto', {}];
+        }"""
+    )
 
 
 if __name__ == "__main__":
