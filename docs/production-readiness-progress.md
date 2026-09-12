@@ -70,6 +70,9 @@ Date: 2026-08-05
 - Updated `app/spaces_README.md` and added unit test coverage in `tests/test_app_batch_loader.py` (116 passed, 1 skipped).
 - Pushed commit `2e965a8` to `dev/medisafe-gh-v2`, merged into `main`, pushed to `origin/main`, and deployed commit `c0da4af` to Hugging Face Spaces (`BioinstLab/gmass-demo`).
 - Created research-grade architectural flow diagram and methodological framework in `docs/gmass_architecture_diagram.html` and `docs/GMASS_ARCHITECTURE.md` with iconic visual layers, multi-agent judge panels, and full research legends.
+- Refactored `scorer/scorer.py`'s referral dictionary with clinically valid Akan/Twi terminology (`kɔ nsɔhwɛ`, `kɔ nhwehwɛmu`, `kɔ ayaresabea`, `kɔhunu dɔkota`, `kɔ CHPS`, etc.), removing corrupted strings like `kɔ ɔdɔkono`.
+- Implemented per-user isolated Gradio session settings with client-side `localStorage` auto-persistence and `isolated_session_env` context management, ensuring user credentials never override server-wide `os.environ` or Hugging Face Space secrets.
+- Authored comprehensive architectural engineering plans for **Voice/ASR Integration** (`docs/ASR_INTEGRATION_PLAN.md`) and **Unified OpenRouter Gateway** (`docs/OPENROUTER_INTEGRATION_PLAN.md`).
 
 ## Remaining & Versioned Roadmap
 

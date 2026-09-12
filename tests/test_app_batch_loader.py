@@ -200,3 +200,33 @@ def test_community_feedback_submission_and_loading(tmp_path, monkeypatch):
     assert "Severe Drug Interaction Not Flagged" in df_after.iloc[0]["Title"]
     assert "Dr. Asante" in df_after.iloc[0]["Author"]
 
+
+def test_isolated_session_env_preserves_global_os_environ(monkeypatch):
+    import os
+    from app.gmass_app import isolated_session_env
+
+    monkeypatch.setenv("GEMINI_API_KEY", "system-gemini-secret")
+    monkeypatch.setenv("OPENAI_API_KEY", "system-openai-secret")
+    monkeypatch.delenv("HF_TOKEN", raising=False)
+
+    user_session = {
+        "gemini_key": "user-custom-gemini-123",
+        "openai_key": "user-custom-openai-456",
+        "hf_token": "user-hf-789",
+        "compute_tier": "nano",
+    }
+
+    # Inside context, user session overrides are active
+    with isolated_session_env(user_session):
+        assert os.environ.get("GEMINI_API_KEY") == "user-custom-gemini-123"
+        assert os.environ.get("OPENAI_API_KEY") == "user-custom-openai-456"
+        assert os.environ.get("HF_TOKEN") == "user-hf-789"
+        assert os.environ.get("GMASS_COMPUTE_TIER") == "nano"
+
+    # Outside context, original system environment is strictly preserved
+    assert os.environ.get("GEMINI_API_KEY") == "system-gemini-secret"
+    assert os.environ.get("OPENAI_API_KEY") == "system-openai-secret"
+    assert "HF_TOKEN" not in os.environ
+    assert "GMASS_COMPUTE_TIER" not in os.environ
+
+
