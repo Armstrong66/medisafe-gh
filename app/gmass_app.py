@@ -181,10 +181,19 @@ def _ensure_ready(model_key: str) -> str | None:
         return f"G-MASS modules could not be imported: {IMPORT_ERROR}"
     required_env = REQUIRED_ENV_BY_MODEL.get(model_key)
     if required_env and not os.getenv(required_env):
-        return f"{required_env} is not configured in environment secrets."
+        return (
+            f"🔑 **{required_env} is not configured**\n\n"
+            f"To evaluate this model, please provide your key:\n"
+            f"1. **In this app**: Open the **Settings & Compute Tiers** tab, enter your `{required_env}`, and click **Apply & Save Preferences** (it will be saved privately in your browser).\n"
+            f"2. **In Hugging Face Space**: If you are the Space owner, configure `{required_env}` under Space **Settings ➜ Variables and secrets**."
+        )
     if os.getenv("SCORER_BACKEND", "policy_api").lower() in {"policy_api", "gemini"}:
         if not os.getenv("GEMINI_API_KEY"):
-            return "GEMINI_API_KEY is required for SCORER_BACKEND=policy_api."
+            return (
+                "🔑 **GEMINI_API_KEY is required** for the multi-agent consensus safety judge (SCORER_BACKEND=policy_api).\n\n"
+                "• **In this app**: Open the **Settings & Compute Tiers** tab, enter your `GEMINI_API_KEY`, and click **Apply & Save Preferences**.\n"
+                "• **In Hugging Face Space**: Add `GEMINI_API_KEY` under Space **Settings ➜ Variables and secrets**."
+            )
     return None
 
 
