@@ -73,6 +73,8 @@ Date: 2026-08-05
 - Refactored `scorer/scorer.py`'s referral dictionary with clinically valid Akan/Twi terminology (`kɔ nsɔhwɛ`, `kɔ nhwehwɛmu`, `kɔ ayaresabea`, `kɔhunu dɔkota`, `kɔ CHPS`, etc.), removing corrupted strings like `kɔ ɔdɔkono`.
 - Implemented per-user isolated Gradio session settings with client-side `localStorage` auto-persistence and `isolated_session_env` context management, ensuring user credentials never override server-wide `os.environ` or Hugging Face Space secrets.
 - Authored comprehensive architectural engineering plans for **Voice/ASR Integration** (`docs/ASR_INTEGRATION_PLAN.md`) and **Unified OpenRouter Gateway** (`docs/OPENROUTER_INTEGRATION_PLAN.md`).
+- Authored publication breakdown and foundation model research roadmap in `docs/GMASS_RESEARCH_BREAKDOWN_AND_ROADMAP.md` covering empirical benchmark performance on `GMASS-300`, rigorous mathematical audit of G-MASS metrics (CSR, SDS, RAR, Consensus Gate), peer-review limitations, top-tier conference submission roadmap (NeurIPS/ACL/EMNLP/FAccT), and architectural specifications for pre-training `AfriBERT-Ghana` (`AfriGuard-Ghana`) to eliminate multi-agent judge swaps.
+
 
 ## Remaining & Versioned Roadmap
 
