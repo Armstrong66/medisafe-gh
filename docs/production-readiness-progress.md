@@ -74,6 +74,10 @@ Date: 2026-08-05
 - Implemented per-user isolated Gradio session settings with client-side `localStorage` auto-persistence and `isolated_session_env` context management, ensuring user credentials never override server-wide `os.environ` or Hugging Face Space secrets.
 - Authored comprehensive architectural engineering plans for **Voice/ASR Integration** (`docs/ASR_INTEGRATION_PLAN.md`) and **Unified OpenRouter Gateway** (`docs/OPENROUTER_INTEGRATION_PLAN.md`).
 - Authored publication breakdown and foundation model research roadmap in `docs/GMASS_RESEARCH_BREAKDOWN_AND_ROADMAP.md` covering empirical benchmark performance on `GMASS-300`, rigorous mathematical audit of G-MASS metrics (CSR, SDS, RAR, Consensus Gate), peer-review limitations, top-tier conference submission roadmap (NeurIPS/ACL/EMNLP/FAccT), and architectural specifications for pre-training `AfriBERT-Ghana` (`AfriGuard-Ghana`) to eliminate multi-agent judge swaps.
+- Added formal mathematical scoring reformulation in `docs/GMASS_RESEARCH_BREAKDOWN_AND_ROADMAP.md` (Section 2) incorporating Severity-Weighted CSR ($\text{W-CSR}$), Multi-Level Semantic Referral Adequacy Index ($\text{RAI}$), Wilson Score intervals, Paired McNemar $\chi^2$ significance tests, paired bootstrap confidence bounds, Bayesian risk-calibrated consensus gating, and dialectal disparity metrics.
+- Added official Apache 2.0 `LICENSE` file to repository root matching project metadata.
+- Fixed Hugging Face Spaces build conflict by updating `spaces>=0.51.1` in `app/spaces_requirements.txt` and syncing `dist/hf_space/requirements.txt`.
+- Fixed Windows GitHub Actions CI failure (`setup.ps1 -App`) by adding `$ProgressPreference = 'SilentlyContinue'`, registering both system and user script directories to PATH, and adding resilient CLI fallback checks in `.github/workflows/smoke.yml`.
 
 
 ## Remaining & Versioned Roadmap

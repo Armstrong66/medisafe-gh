@@ -5,6 +5,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 Write-Host "=== G-MASS Setup ==="
 
@@ -65,12 +66,15 @@ if (Test-Path "constraints.txt") {
 Write-Host "OK base dependencies and editable gmass CLI installed"
 
 $scriptsDir = & $pythonCmd.Exe @($pythonCmd.Args + @("-c", "import sysconfig; print(sysconfig.get_path('scripts'))"))
-if ($scriptsDir -and (Test-Path $scriptsDir)) {
-    if ($env:GITHUB_PATH) {
-        Add-Content -Path $env:GITHUB_PATH -Value $scriptsDir
-    }
-    if ($env:PATH -notlike "*$scriptsDir*") {
-        $env:PATH = "$scriptsDir;$env:PATH"
+$userScriptsDir = & $pythonCmd.Exe @($pythonCmd.Args + @("-c", "import site, os; print(os.path.join(site.getuserbase(), 'Scripts'))"))
+foreach ($dir in @($scriptsDir, $userScriptsDir)) {
+    if ($dir -and (Test-Path $dir)) {
+        if ($env:GITHUB_PATH) {
+            Add-Content -Path $env:GITHUB_PATH -Value $dir
+        }
+        if ($env:PATH -notlike "*$dir*") {
+            $env:PATH = "$dir;$env:PATH"
+        }
     }
 }
 
