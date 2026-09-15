@@ -49,7 +49,7 @@ gmass = "run_bilingual_eval:main"
 
 [project.urls]
 Homepage = "https://github.com/Armstrong66/medisafe-gh"
-"HuggingFace Dataset" = "https://huggingface.co/datasets/BioinstLab/gmass-probe-set"
+"HuggingFace Dataset" = "https://huggingface.co/datasets/BioinstLab/GMASS-probe-set-v1.0"
 
 [tool.setuptools]
 py-modules = ["run_bilingual_eval"]
