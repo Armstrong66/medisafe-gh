@@ -70,27 +70,8 @@ Date: 2026-08-05
 - Updated `app/spaces_README.md` and added unit test coverage in `tests/test_app_batch_loader.py` (116 passed, 1 skipped).
 - Pushed commit `2e965a8` to `dev/medisafe-gh-v2`, merged into `main`, pushed to `origin/main`, and deployed commit `c0da4af` to Hugging Face Spaces (`BioinstLab/gmass-demo`).
 - Created research-grade architectural flow diagram and methodological framework in `docs/gmass_architecture_diagram.html` and `docs/GMASS_ARCHITECTURE.md` with iconic visual layers, multi-agent judge panels, and full research legends.
-- Refactored `scorer/scorer.py`'s referral dictionary with clinically valid Akan/Twi terminology (`kɔ nsɔhwɛ`, `kɔ nhwehwɛmu`, `kɔ ayaresabea`, `kɔhunu dɔkota`, `kɔ CHPS`, etc.), removing corrupted strings like `kɔ ɔdɔkono`.
-- Implemented per-user isolated Gradio session settings with client-side `localStorage` auto-persistence and `isolated_session_env` context management, ensuring user credentials never override server-wide `os.environ` or Hugging Face Space secrets.
-- Authored comprehensive architectural engineering plans for **Voice/ASR Integration** (`docs/ASR_INTEGRATION_PLAN.md`) and **Unified OpenRouter Gateway** (`docs/OPENROUTER_INTEGRATION_PLAN.md`).
-- Authored publication breakdown and foundation model research roadmap in `docs/GMASS_RESEARCH_BREAKDOWN_AND_ROADMAP.md` covering empirical benchmark performance on `GMASS-300`, rigorous mathematical audit of G-MASS metrics (CSR, SDS, RAR, Consensus Gate), peer-review limitations, top-tier conference submission roadmap (NeurIPS/ACL/EMNLP/FAccT), and architectural specifications for pre-training `AfriBERT-Ghana` (`AfriGuard-Ghana`) to eliminate multi-agent judge swaps.
-- Added formal mathematical scoring reformulation in `docs/GMASS_RESEARCH_BREAKDOWN_AND_ROADMAP.md` (Section 2) incorporating Severity-Weighted CSR ($\text{W-CSR}$), Multi-Level Semantic Referral Adequacy Index ($\text{RAI}$), Wilson Score intervals, Paired McNemar $\chi^2$ significance tests, paired bootstrap confidence bounds, Bayesian risk-calibrated consensus gating, and dialectal disparity metrics.
-- Added official Apache 2.0 `LICENSE` file to repository root matching project metadata.
-- Fixed Hugging Face Spaces build conflict by updating `spaces>=0.51.1` in `app/spaces_requirements.txt` and syncing `dist/hf_space/requirements.txt`.
-- Fixed Windows GitHub Actions CI failure (`setup.ps1 -App`) by adding `$ProgressPreference = 'SilentlyContinue'`, registering both system and user script directories to PATH, and adding resilient CLI fallback checks in `.github/workflows/smoke.yml`.
-
-
-## Remaining & Versioned Roadmap
-
-### Planned for v1.2.0 (Near-term Pipeline Upgrades & Reproducibility)
-- [ ] **Run Manifest Engine**: Capture run metadata (git commit SHA, YAML config hash, model identifiers, pip dependency snapshot, input probe checksums) in `outputs/manifest.json`.
-- [ ] **CLI Subcommand Refactoring**: Expose structured CLI commands (`gmass eval`, `gmass score`, `gmass combine`, `gmass report`, `gmass export-metrics`).
-- [ ] **Hybrid Semantic Detectors**: Integrate sentence embeddings (`all-MiniLM-L6-v2` and multilingual anchors) for paraphrased referral and subtle hallucination detection.
-- [ ] **Ga Language Extension (`GMASS-probe-set-v1.1`)**: Add Ga probe loading and LID routing rules.
-- [ ] **Interactive Failure Drill-down in Gradio**: Add modal/table drill-down for failed clinical probes with filter by disease domain and failure category.
-
-### Planned for v2.0.0 (Extensible Framework & Multimodal Safety)
-- [ ] **Framework Protocol Layer**: Formalize `ModelCaller`, `SafetyScorer`, and `GMassRegistry` classes for custom user models and external scorer backends.
-- [ ] **Multi-turn Clinical Simulation**: Evaluate conversational drift and safety degradation across multi-turn patient-doctor interactions.
-- [ ] **Ghana Health Service (GHS) Triage Level Scoring**: Classify referrals by facility tier (CHPS Compound vs District Hospital vs Regional/Teaching Hospital).
-- [ ] **Audio/Voice Screen**: Evaluate transcribed voice notes (Whisper ASR + Khaya) directly for low-literacy clinical accessibility.
+- Refactored `scorer/scorer.py`'s referral dictionary with validated Akan/Twi medical terminology and orthography.
+- Implemented per-user isolated Gradio session settings with client-side `localStorage` auto-persistence and `isolated_session_env` context management.
+- Added official Apache 2.0 `LICENSE` file to repository root.
+- Updated Hugging Face Spaces dependency requirements (`spaces>=0.51.1`) and re-synchronized deployment bundle.
+- Hardened cross-platform CI setup scripts (`setup.ps1`, `setup.sh`) and GitHub Actions smoke workflows.

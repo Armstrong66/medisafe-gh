@@ -48,8 +48,8 @@ dev = ["pytest>=8.2", "black>=24.4", "ruff>=0.5"]
 gmass = "run_bilingual_eval:main"
 
 [project.urls]
-Homepage = "https://github.com/[username]/medisafe-gh"
-"HuggingFace Dataset" = "https://huggingface.co/datasets/[username]/gmass-probe-set"
+Homepage = "https://github.com/Armstrong66/medisafe-gh"
+"HuggingFace Dataset" = "https://huggingface.co/datasets/BioinstLab/gmass-probe-set"
 
 [tool.setuptools]
 py-modules = ["run_bilingual_eval"]
