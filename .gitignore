@@ -62,3 +62,8 @@ logs/
 *.zip
 *.tar
 *.tar.gz
+
+# Private research vault & proprietary documentation
+research_vault/
+docs/internal/
+*.internal.md
