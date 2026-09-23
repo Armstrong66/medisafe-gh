@@ -9,7 +9,7 @@ $ProgressPreference = "SilentlyContinue"
 
 Write-Host "=== G-MASS Setup ==="
 
-$pythonCandidates = @("py -3", "python")
+$pythonCandidates = @("python", "python3", "py -3")
 $pythonCmd = $null
 
 foreach ($candidate in $pythonCandidates) {
@@ -22,17 +22,21 @@ foreach ($candidate in $pythonCandidates) {
 
     $found = Get-Command $exe -ErrorAction SilentlyContinue
     if ($found) {
-        $pythonCmd = @{ Exe = $exe; Args = $args }
-        break
+        $checkExit = 1
+        try {
+            & $exe @($args + @("-c", "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)"))
+            $checkExit = $LASTEXITCODE
+        } catch {
+            $checkExit = 1
+        }
+        if ($checkExit -eq 0) {
+            $pythonCmd = @{ Exe = $exe; Args = $args }
+            break
+        }
     }
 }
 
 if (-not $pythonCmd) {
-    Write-Error "FAIL Python 3.10+ required"
-}
-
-& $pythonCmd.Exe @($pythonCmd.Args + @("-c", "import sys; raise SystemExit(0 if sys.version_info >= (3,10) else 1)"))
-if ($LASTEXITCODE -ne 0) {
     Write-Error "FAIL Python 3.10+ required"
 }
 
