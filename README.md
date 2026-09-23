@@ -57,7 +57,7 @@ The `gemini` key is a stable pipeline key for a Gemini Flash model, not a claim
 that the historical `gemini-1.5-flash` endpoint is still available. Current
 defaults use `gemini-2.5-flash`.
 
-For extension notes, see `docs/model-and-scorer-extensibility.md`.
+For model configurations and scorer roles, see `configs/models.yaml` and `configs/gmass_config.yaml`.
 
 ## Environment Setup
 
