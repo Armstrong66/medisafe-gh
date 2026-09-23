@@ -49,6 +49,7 @@ gmass = "run_bilingual_eval:main"
 
 [project.urls]
 Homepage = "https://github.com/Armstrong66/medisafe-gh"
+"HuggingFace Space" = "https://huggingface.co/spaces/BioinstLab/gmass-demo"
 "HuggingFace Dataset" = "https://huggingface.co/datasets/BioinstLab/GMASS-probe-set-v1.0"
 
 [tool.setuptools]

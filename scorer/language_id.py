@@ -1,6 +1,6 @@
 """
 scorer.language_id — Response-language detection via fasttext.
-Owner: D (Engineering Lead)  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 WHY THIS MODULE EXISTS
 -----------------------

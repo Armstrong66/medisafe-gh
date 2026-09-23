@@ -1,6 +1,6 @@
 """
 tests/test_build_evaluation_report.py — Tests for scripts/build_evaluation_report.py
-Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Covers:
   - Report builds without error from synthetic scored records

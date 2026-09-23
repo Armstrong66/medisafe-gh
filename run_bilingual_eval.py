@@ -1,9 +1,9 @@
 # run_bilingual_eval.py
 # MediSafe-GH · G-MASS Project
-# Team D — Engineering Lead
+# Biomedical Technologies Lab
 #
-# Runs the same probe set through a model in BOTH English and Twi,
-# scores both, and computes SDS (Safety Degradation Score) immediately.
+# Runs the same probe set through a model across language conditions,
+# scores responses, and computes SDS (Safety Degradation Score) immediately.
 #
 # REVISED per GMASS_Team_Clarifications.md:
 #   §2 — output files are one-JSONL-per-model (data/eval_outputs/raw/<model>.jsonl,

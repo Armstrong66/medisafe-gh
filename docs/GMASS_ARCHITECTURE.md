@@ -1,5 +1,5 @@
 # G-MASS: Architecture & Methodological Evaluation Framework
-**MediSafe-GH · Track II Africa AI Safety Prize · KNUST Bioinstrumentation & Medical Imaging Laboratory**
+**MediSafe-GH · Biomedical Technologies Lab**
 
 ---
 

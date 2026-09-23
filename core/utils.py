@@ -1,6 +1,6 @@
 r"""
 core.utils — Shared I/O, caching, and environment helpers.
-Owner: D (Engineering Lead)  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Unified from two parallel implementations (Team D scratch work + the
 GMASS_Coding_Standard.md reference repo). Function names from BOTH

@@ -1,6 +1,5 @@
 # configs/gmass_config.yaml
 # G-MASS evaluation settings - loaded by core/config.py
-# Owner: D (infrastructure) | Do not modify thresholds without team agreement
 
 domains:
   - Malaria

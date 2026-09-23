@@ -1,6 +1,6 @@
 """
 tests/test_language_id.py — Unit tests for scorer/language_id.py
-Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 These tests mock fasttext's model loading entirely — no network access,
 no real model download, no dependency on fasttext's actual accuracy.

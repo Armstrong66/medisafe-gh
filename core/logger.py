@@ -1,6 +1,6 @@
 """
-logger.py - nohup-safe rotating logger for G-MASS evaluation runs.
-Owner: D | MediSafe-GH - Africa AI Safety Prize 2026
+logger.py - rotating logger for G-MASS evaluation runs.
+MediSafe-GH · Biomedical Technologies Lab
 """
 
 import logging

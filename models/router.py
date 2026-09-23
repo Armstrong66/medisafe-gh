@@ -1,6 +1,6 @@
 # models/router.py
 # MediSafe-GH · G-MASS Project
-# Team D -- Engineering Lead
+# Biomedical Technologies Lab
 #
 # Unified model router for the probe-tested evaluation models.
 # - Phi-3 Mini    -> HuggingFace Inference Router (router.huggingface.co/v1)

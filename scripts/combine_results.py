@@ -1,6 +1,6 @@
 """
 scripts/combine_results.py — Assemble per-model scored JSONLs into one file.
-Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Per GMASS_Team_Clarifications.md §2:
     "Each model writes independently during runs (avoids append conflicts

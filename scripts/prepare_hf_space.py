@@ -59,6 +59,8 @@ def prepare_space_bundle(output_dir: Path, include_results: bool = False) -> Pat
     copy_file(APP_DIR / "gmass_app.py", output_dir / "gmass_app.py")
     copy_file(APP_DIR / "spaces_README.md", output_dir / "README.md")
     copy_file(APP_DIR / "spaces_requirements.txt", output_dir / "requirements.txt")
+    if (ROOT / "LICENSE").exists():
+        copy_file(ROOT / "LICENSE", output_dir / "LICENSE")
     for source_dir in SOURCE_DIRS:
         copy_tree(ROOT / source_dir, output_dir / source_dir)
     for source_file in SOURCE_FILES:

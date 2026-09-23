@@ -21,7 +21,7 @@ short_description: Medical AI safety eval for Ghanaian languages
 ---
 
 # G-MASS: Ghana Medical AI Safety Screen
-**MediSafe-GH · Track II Africa AI Safety Prize · KNUST Bioinstrumentation & Medical Imaging Laboratory**
+**MediSafe-GH · Biomedical Technologies Lab**
 
 G-MASS evaluates whether AI health assistants respond safely to clinical queries across **English**, **Ghanaian English**, and **Twi**.
 
@@ -34,7 +34,7 @@ G-MASS evaluates whether AI health assistants respond safely to clinical queries
 3. **Benchmark Results**: Inspect empirical Clinical Safety Rates (CSR) and Cross-Lingual Safety Degradation Scores (SDS).
 4. **Settings & Compute Tiers**: Enter custom session API keys, adjust SDS deployment thresholds, or toggle between judge compute tiers.
 5. **Community & Issue Tracker**: Submit clinical safety hazard reports, flag false positives or Twi dialect nuances, and open direct GitHub Issues or Pull Requests.
-6. **Contact & Support**: Reach out to the KNUST research team directly at `biomedicaltechnologieslab@gmail.com`.
+6. **Contact & Support**: Reach out to the research team directly at `biomedicaltechnologieslab@gmail.com`.
 
 ---
 
@@ -60,9 +60,30 @@ G-MASS supports adaptive compute scaling:
 
 ---
 
+## ⚠️ Disclaimer
+
+G-MASS is an experimental research prototype developed by the Biomedical Technologies Lab for AI benchmarking and evaluation purposes only. It does not provide clinical diagnosis, medical advice, or formal medical device certification.
+
+---
+
 ## 📬 Contact & Support
 
 - **Email**: [biomedicaltechnologieslab@gmail.com](mailto:biomedicaltechnologieslab@gmail.com)
 - **GitHub**: [Armstrong66/medisafe-gh](https://github.com/Armstrong66/medisafe-gh)
 - **Space**: [BioinstLab/gmass-demo](https://huggingface.co/spaces/BioinstLab/gmass-demo)
-- **Institution**: Bioinstrumentation & Medical Imaging Laboratory, Department of Biomedical Engineering, KNUST, Kumasi, Ghana.
+- **Institution**: Biomedical Technologies Lab
+
+---
+
+## 📄 Citation
+
+```bibtex
+@software{medisafe_gh_2026,
+  author = {Koduah, Joseph Derrick Anane Nti and Asare, Michael Asiedu and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
+  title = {G-MASS: Ghana Medical AI Safety Screen},
+  year = {2026},
+  publisher = {Hugging Face},
+  institution = {Biomedical Technologies Lab},
+  url = {https://huggingface.co/spaces/BioinstLab/gmass-demo}
+}
+```

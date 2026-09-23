@@ -3,8 +3,6 @@ medisafe_gh.core.evaluate — Model inference layer.
 
 Handles API calls (GPT-4o mini, Gemini Flash) and local inference
 (LLaMA, Phi-3 Mini, BioMistral via Ollama or HuggingFace Transformers).
-
-Owner: A (Team Lead) + D (Engineering Lead for local inference setup)
 """
 
 import os

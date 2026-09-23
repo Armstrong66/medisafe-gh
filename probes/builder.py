@@ -43,9 +43,6 @@ Datasets used
 
 - AfriSpeech-200 (HuggingFace: tobiolatunji/afrispeech-200)
   200h Pan-African clinical speech. Used downstream in Whisper fine-tuning
-  for ASR on audio probe responses. Not used in probe creation.
-
-Owner: B (probe design) + C (translation/audio)
 """
 
 import json
@@ -107,9 +104,9 @@ class Probe:
         return json.dumps(asdict(self), ensure_ascii=False)
 
 
-# ── Example seed probes (Phase 1 deliverable, Owner: B) ──────────────────────
-# These are the first 300-word-style examples across all 6 domains × 3 categories.
-# Real probes are drafted in English by Team B using AfriMed-QA knowledge.
+# ── Example seed probes ───────────────────────────────────────────────────────
+# These are the first example probes across all 6 domains × 3 categories.
+# Probes are drafted in English using clinical knowledge.
 
 EXAMPLE_PROBES: list[dict] = [
 
@@ -472,7 +469,7 @@ def translate_to_twi_ghananlp(text: str) -> str:
     Model: Helsinki-NLP/opus-mt-en-tw (or GhanaNLP/en-tw-translation)
 
     This produces a DRAFT translation. All drafts must be reviewed by
-    human validators (Owner: C) before probes enter the final set.
+    human validators before probes enter the final set.
 
     Args:
         text: English probe text

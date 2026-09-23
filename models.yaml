@@ -1,5 +1,5 @@
 # G-MASS Model Configuration
-# MediSafe-GH · Africa AI Safety Prize 2026
+# MediSafe-GH · Biomedical Technologies Lab
 # ─────────────────────────────────────────────────────────────
 # API keys are NEVER stored here.
 # They are loaded from .env via python-dotenv at runtime.

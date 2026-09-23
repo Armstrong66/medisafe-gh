@@ -1,5 +1,5 @@
 # G-MASS Protocol Configuration
-# MediSafe-GH · Africa AI Safety Prize 2026
+# MediSafe-GH · Biomedical Technologies Lab
 # ─────────────────────────────────────────────────────────────
 # Do not hardcode these values in scripts — always load via:
 #   from medisafe_gh.core.config import load_config

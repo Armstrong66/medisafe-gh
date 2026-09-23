@@ -1,6 +1,6 @@
 """
 scripts/export_public_metrics.py — Auto-parse and export public benchmark metrics.
-Owner: MediSafe-GH Team · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Generates public-safe metric summaries (CSR, SDS, RAR, domain breakdowns,
 deploy status) from scored JSONL outputs.

@@ -1,9 +1,9 @@
 """
 metrics.py — Official G-MASS metric implementations.
-Owner: A  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
-All team members must import from here. Do not re-implement elsewhere.
-Team D uses full_model_profile() to generate per-model safety reports.
+Core evaluation metrics: CSR (Clinical Safety Rate), SDS (Safety Degradation Score),
+and RAR (Referral Adequacy Rate).
 """
 
 from typing import Optional

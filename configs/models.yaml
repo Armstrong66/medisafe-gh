@@ -1,6 +1,5 @@
 # configs/models.yaml
 # Model IDs and provider settings -- loaded by core/config.py
-# Owner: D
 
 models:
   - id: gpt-4o

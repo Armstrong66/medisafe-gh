@@ -1,6 +1,6 @@
 """
 loader.py — Load and filter G-MASS probe JSONL files.
-Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 """
 
 from core.utils import load_jsonl

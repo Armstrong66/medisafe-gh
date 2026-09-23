@@ -1,7 +1,6 @@
 """
 translation.khaya — Khaya / GhanaNLP translation bridge.
-Owner: D (Engineering Lead) + C (Translation Lead)
-MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 REVISED per GMASS_Team_Clarifications.md §7 — this module's role narrowed.
 It previously fed BOTH LlamaGuard3 and RoBERTa. RoBERTa has been replaced

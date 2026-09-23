@@ -1,6 +1,6 @@
 """
 test_metrics.py — Unit tests for core/metrics.py
-Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Run with: pytest tests/test_metrics.py -v
 """

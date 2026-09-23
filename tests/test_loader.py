@@ -1,6 +1,6 @@
 """
 tests/test_loader.py — Unit tests for probes/loader.py
-Owner: D  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Covers §1 of GMASS_Team_Clarifications.md — draft/validated translation
 resolution must never silently overwrite either field, and must correctly

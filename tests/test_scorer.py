@@ -1,6 +1,6 @@
 """
 tests/test_scorer.py -- Unit tests for scorer/scorer.py
-Owner: D  |  MediSafe-GH - Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 REVISED per GMASS_Team_Clarifications.md Section 7 -- GemmaScorer was replaced by
 AfroLMScorer (Gemma is effectively English-only, unreliable on Twi).

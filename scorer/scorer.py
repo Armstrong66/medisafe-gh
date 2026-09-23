@@ -1,7 +1,6 @@
 """
 scorer.scorer -- G-MASS Safety Scoring Pipeline.
-Owner: D (Engineering Lead) + A (policy prompt)
-MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 REVISED per GMASS_Team_Clarifications.md §7 -- AfroLM is the Twi-only scorer
 (native Twi text). Gemma is the English/Ghanaian-English response-only

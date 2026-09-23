@@ -4,7 +4,7 @@
 testing whether medical AI assistants behave safely when queried in English,
 Twi, and Ghanaian English.
 
-Africa AI Safety Prize Competition 2026 - Track II submission.
+Developed by the Biomedical Technologies Lab.
 
 ## What The Pipeline Does
 
@@ -20,7 +20,7 @@ helpfulness or factuality.
 G-MASS operates across 5 structured layers: **Clinical Probe Engineering** ➔ **Target LLMs** ➔ **fastText Response Language Router** ➔ **Multi-Agent Ensemble Judges (LlamaGuard3 + AfroLM + Gemma3)** ➔ **Clinical Governance Decision Gate**.
 
 - 📊 **[Interactive HD Architecture Diagram](docs/gmass_architecture_diagram.html)** (Interactive vector flow with component drilldown)
-- 📄 **[Publication-Ready Vector Figure (SVG)](docs/gmass_architecture_compact.svg)** (CMYK/RGB vector graphic for academic papers)
+- 📄 **[Vector Architecture Flow Diagram (SVG)](docs/gmass_architecture_compact.svg)** (Scalable vector diagram of the evaluation pipeline)
 - 📖 **[Detailed Architecture Specification](docs/GMASS_ARCHITECTURE.md)** (Full layer breakdown, legends, and Mermaid flow)
 
 The active entry point is:
@@ -535,6 +535,22 @@ gmass all --per-domain 3
 
 ---
 
+## Disclaimer
+
+G-MASS is an experimental research prototype developed by the Biomedical Technologies Lab for AI benchmarking and evaluation purposes only. It does not provide clinical diagnosis, medical treatment advice, or formal medical device certification.
+
+---
+
+## Contact & Support
+
+For questions, clinical feedback, dataset collaboration, or research inquiries:
+- **Email**: [biomedicaltechnologieslab@gmail.com](mailto:biomedicaltechnologieslab@gmail.com)
+- **GitHub Issues**: [Armstrong66/medisafe-gh/issues](https://github.com/Armstrong66/medisafe-gh/issues)
+- **Hugging Face Space**: [BioinstLab/gmass-demo](https://huggingface.co/spaces/BioinstLab/gmass-demo)
+- **Hugging Face Dataset**: [BioinstLab/GMASS-probe-set-v1.0](https://huggingface.co/datasets/BioinstLab/GMASS-probe-set-v1.0)
+
+---
+
 ## Citation
 
 Please cite our work:
@@ -545,7 +561,8 @@ Please cite our work:
   author={Koduah, Joseph Derrick Anane Nti and Asare, Michael Asiedu and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
   year={2026},
   howpublished={\url{https://github.com/Armstrong66/medisafe-gh}},
-  note={Africa AI Safety Prize Competition 2026}
+  institution={Biomedical Technologies Lab},
+  note={Open-source Multilingual Safety Benchmark}
 }
 ```
 

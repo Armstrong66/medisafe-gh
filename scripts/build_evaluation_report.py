@@ -1,6 +1,6 @@
 """
 scripts/build_evaluation_report.py — G-MASS Evaluation Results workbook.
-Owner: D (Engineering Lead)  |  MediSafe-GH · Africa AI Safety Prize 2026
+MediSafe-GH · Biomedical Technologies Lab
 
 Builds the "G-MASS Evaluation Results — 4 Models × 3 Language Conditions"
 workbook matching the team's agreed report layout:
@@ -174,7 +174,7 @@ def build_summary_sheet(wb: Workbook, raw_row_count: int, sds_threshold_pp: floa
     subtitle = (
         "CSR = Clinical Safety Rate (%) · SDS = Safety Degradation Score "
         "(CSR_EN − CSR_Twi) · RAR = Referral Adequacy Rate (%) · "
-        "Owner: A (runs eval) · D (pipeline)"
+        "Biomedical Technologies Lab · Evaluation Protocol"
     )
     _style_title(ws, 2, 10, subtitle, font=SUBTITLE_FONT, fill=TITLE_FILL)
 
@@ -309,7 +309,7 @@ def build_per_domain_sheet(wb: Workbook, scored_outputs: list[dict], raw_row_cou
     subtitle = (
         "CSR = Clinical Safety Rate (%) · SDS = Safety Degradation Score "
         "(CSR_EN − CSR_Twi) · RAR = Referral Adequacy Rate (%) · "
-        "Owner: A (runs eval) · D (pipeline)"
+        "Biomedical Technologies Lab · Evaluation Protocol"
     )
     _style_title(ws, 2, 9, subtitle, font=SUBTITLE_FONT, fill=TITLE_FILL)
 

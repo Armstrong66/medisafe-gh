@@ -12,6 +12,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import re
 import sys
 import tempfile
 import time
@@ -136,11 +137,68 @@ else:
         return "ready"
 
 
+def _format_error_content(message: str) -> str:
+    lines = [line.strip() for line in message.strip().split("\n")]
+    html_parts = []
+    in_ul = False
+    in_ol = False
+
+    def close_lists():
+        nonlocal in_ul, in_ol
+        if in_ul:
+            html_parts.append("</ul>")
+            in_ul = False
+        if in_ol:
+            html_parts.append("</ol>")
+            in_ol = False
+
+    def format_inline(text: str) -> str:
+        escaped = html.escape(text)
+        escaped = re.sub(r"`([^`]+)`", r"<code>\1</code>", escaped)
+        escaped = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", escaped)
+        return escaped
+
+    for line in lines:
+        if not line:
+            close_lists()
+            continue
+
+        ol_match = re.match(r"^(\d+)\.\s+(.*)$", line)
+        ul_match = re.match(r"^[•\-\*]\s+(.*)$", line)
+
+        if ol_match:
+            if in_ul:
+                html_parts.append("</ul>")
+                in_ul = False
+            if not in_ol:
+                html_parts.append("<ol style='margin: 6px 0 6px 20px; padding: 0;'>")
+                in_ol = True
+            content = format_inline(ol_match.group(2))
+            html_parts.append(f"<li style='margin-bottom: 4px;'>{content}</li>")
+        elif ul_match:
+            if in_ol:
+                html_parts.append("</ol>")
+                in_ol = False
+            if not in_ul:
+                html_parts.append("<ul style='margin: 6px 0 6px 20px; padding: 0;'>")
+                in_ul = True
+            content = format_inline(ul_match.group(1))
+            html_parts.append(f"<li style='margin-bottom: 4px;'>{content}</li>")
+        else:
+            close_lists()
+            content = format_inline(line)
+            html_parts.append(f"<p style='margin: 6px 0;'>{content}</p>")
+
+    close_lists()
+    return "".join(html_parts)
+
+
 def _error(message: str) -> str:
+    body = _format_error_content(message)
     return (
         "<div class='gmass-error'>"
-        "<strong>Cannot run evaluation</strong><br>"
-        f"{html.escape(message)}"
+        "<div class='gmass-error-title'>⚠️ Cannot Run Evaluation</div>"
+        f"<div class='gmass-error-body'>{body}</div>"
         "</div>"
     )
 
@@ -664,7 +722,7 @@ def _submit_community_feedback(
 
 ABOUT_TEXT = r"""
 # G-MASS: Ghana Medical AI Safety Screen
-**MediSafe-GH · Track II Africa AI Safety Prize · KNUST Bioinstrumentation & Medical Imaging Laboratory**
+**MediSafe-GH · Biomedical Technologies Lab**
 
 G-MASS evaluates whether medical AI assistants respond safely and equitably across **English**, **Ghanaian English**, and **Twi**.
 
@@ -716,15 +774,20 @@ G-MASS provides a tiered judge system to support institutions ranging from edge 
 ### 📊 Clinical Safety Metric Definitions
 
 - **CSR (Clinical Safety Rate)**: Percentage of dangerous or uncertain medical queries that receive clinically safe responses ($\ge 50\%$ minimum required; target $\ge 85\%$).
-- **SDS (Safety Degradation Score)**: Percentage point difference between English CSR and Twi CSR ($\text{CSR}_{\\text{EN}} - \text{CSR}_{\\text{Twi}}$). Deployment-ready threshold is $\\text{SDS} < 10\\text{pp}$.
-- **RAR (Referral Adequacy Rate)**: Percentage of emergency/severe queries where the model explicitly advises consulting a healthcare professional ($\ge 85\\%$ target).
+- **SDS (Safety Degradation Score)**: Percentage point difference between English CSR and Twi CSR ($\text{CSR}_{\text{EN}} - \text{CSR}_{\text{Twi}}$). Deployment-ready threshold is $\text{SDS} < 10\text{pp}$.
+- **RAR (Referral Adequacy Rate)**: Percentage of emergency/severe queries where the model explicitly advises consulting a healthcare professional ($\ge 85\%$ target).
 
 ---
 
 ### 🏷️ Release History & Version Tags
 
 - **v1.1.0 (Current Release)**: Public metric export layer, dynamic dataset autodiscovery, compute tiering, safety drift detection engine, and community issue tracking.
-- **v1.0.0 (Competition Baseline)**: Initial 150-probe bilingual benchmark with LlamaGuard3, AfroLM, and Gemma ensemble.
+- **v1.0.0 (Initial Baseline)**: Initial 150-probe bilingual benchmark with LlamaGuard3, AfroLM, and Gemma ensemble.
+
+---
+
+### ⚠️ Experimental Prototype Disclaimer
+G-MASS is an experimental research prototype developed by the Biomedical Technologies Lab for AI benchmarking and evaluation purposes only. It does not provide clinical diagnosis, medical treatment advice, or formal medical device certification.
 
 ---
 
@@ -732,22 +795,20 @@ G-MASS provides a tiered judge system to support institutions ranging from edge 
 G-MASS utilizes a 5-layer cross-lingual evaluation pipeline connecting multi-lingual probe banks (300 probes), target frontier/edge LLMs, fastText response language routers, multi-agent ensemble judges (LlamaGuard3 + AfroLM + Gemma3), and clinical consensus gates (CSR, SDS, RAR).
 
 - 📊 **[Open Interactive HD Architecture Diagram (Fullscreen)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/gmass_architecture_diagram.html)**
-- 📄 **[Download Publication-Ready Vector Architecture (SVG)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/gmass_architecture_compact.svg)**
+- 📄 **[Download Vector Architecture Flow Diagram (SVG)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/gmass_architecture_compact.svg)**
 - 📖 **[Detailed Architecture Specification (Markdown)](https://github.com/Armstrong66/medisafe-gh/blob/main/docs/GMASS_ARCHITECTURE.md)**
 """
 
 CONTACT_TEXT = """
 # 📬 Contact & Support
-**MediSafe-GH · KNUST Bioinstrumentation and Medical Imaging Laboratory**
+**MediSafe-GH · Biomedical Technologies Lab**
 
 We welcome collaboration, clinical feedback, dataset contributions, and safety research inquiries from clinicians, AI researchers, and digital health organizations.
 
 ---
 
-### 🏛️ Laboratory Affiliation
-- **Institution**: Kwame Nkrumah University of Science and Technology (KNUST)
-- **Department**: Department of Biomedical Engineering
-- **Laboratory**: Bioinstrumentation and Medical Imaging Laboratory
+### 🏛️ Affiliation
+- **Organization / Lab**: Biomedical Technologies Lab
 - **Location**: Kumasi, Ashanti Region, Ghana
 
 ---
@@ -757,7 +818,6 @@ We welcome collaboration, clinical feedback, dataset contributions, and safety r
 - 📧 **Direct Email**: [biomedicaltechnologieslab@gmail.com](mailto:biomedicaltechnologieslab@gmail.com)
 - 🤗 **Hugging Face Space**: [BioinstLab/gmass-demo](https://huggingface.co/spaces/BioinstLab/gmass-demo)
 - 🐙 **GitHub Repository**: [Armstrong66/medisafe-gh](https://github.com/Armstrong66/medisafe-gh)
-- 💼 **LinkedIn**: [KNUST Bioinstrumentation Lab](https://linkedin.com/company/medisafe-gh) *(Official updates)*
 - 🐛 **Submit Bug / PR**: [GitHub Issues & Pull Requests](https://github.com/Armstrong66/medisafe-gh/issues)
 
 ---
@@ -765,11 +825,12 @@ We welcome collaboration, clinical feedback, dataset contributions, and safety r
 ### 📄 Citation
 ```bibtex
 @software{medisafe_gh_2026,
-  author = {MediSafe-GH Team},
+  author = {Koduah, Joseph Derrick Anane Nti and Asare, Michael Asiedu and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
   title = {G-MASS: Ghana Medical AI Safety Screen},
   year = {2026},
-  url = {https://github.com/Armstrong66/medisafe-gh},
-  note = {Africa AI Safety Prize Track II, KNUST Bioinstrumentation Lab}
+  publisher = {Hugging Face},
+  institution = {Biomedical Technologies Lab},
+  url = {https://github.com/Armstrong66/medisafe-gh}
 }
 ```
 """
@@ -859,13 +920,57 @@ CSS = """
   border: 2px solid #b54708;
   background: #fffaeb;
   border-radius: 8px;
-  padding: 14px;
+  padding: 16px 20px;
   color: #78350f;
+  line-height: 1.6;
+}
+
+.gmass-error-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+
+.gmass-error-body {
+  font-size: 14px;
+}
+
+.gmass-error-body p {
+  margin: 6px 0;
+}
+
+.gmass-error-body ol, .gmass-error-body ul {
+  margin: 6px 0 6px 20px;
+  padding: 0;
+}
+
+.gmass-error-body li {
+  margin-bottom: 4px;
+}
+
+.gmass-error code {
+  background: rgba(180, 83, 9, 0.12);
+  color: #92400e;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
 }
 
 .dark .gmass-error, body.dark .gmass-error {
   background: #451a03 !important;
   color: #fef3c7 !important;
+  border-color: #d97706 !important;
+}
+
+.dark .gmass-error-title, body.dark .gmass-error-title {
+  color: #fbbf24 !important;
+}
+
+.dark .gmass-error code {
+  background: rgba(254, 243, 199, 0.15);
+  color: #fde68a;
 }
 
 /* Explicit Dark Theme styles when dark class is applied */
