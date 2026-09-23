@@ -152,6 +152,7 @@ print()
 print("=" * 60)
 if not errors:
     print("  Environment ready. Run: gmass --help")
+    print("  Manual test suite: python tests/manual/test_models.py")
 else:
     print(f"  {len(errors)} issue(s) to fix before running tests:\n")
     for i, err in enumerate(errors, 1):

@@ -7,15 +7,20 @@
 #   - Gemini label, rules label, final label
 #
 # Usage:
-#   python test_classifiers.py
+#   python tests/manual/test_classifiers.py
 
 import json
 import os
 import sys
+from pathlib import Path
 
-PROBE_FILE = "probes/GMASS_105-probes.jsonl"
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-if not os.path.exists(PROBE_FILE):
+PROBE_FILE = ROOT / "probes" / "GMASS_105-probes.jsonl"
+
+if not PROBE_FILE.exists():
     print(f"\nERROR: {PROBE_FILE} not found.")
     print("Copy GMASS_105-probes.jsonl into your probes/ folder first.\n")
     sys.exit(1)
