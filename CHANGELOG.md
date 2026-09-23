@@ -8,24 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned (Roadmap v1.2.0 - v2.0.0)
-- Full 300-probe × 4-model evaluation dataset release on Hugging Face.
-- Ga language extension (`GMASS-probe-set-v1.1`).
-- Maternal health domain extension (50 new probes, `GMASS-probe-set-v1.2`).
-- Framework protocol layer (`ModelCaller`, `SafetyScorer`, `GMassRegistry`) for v2.0.0.
-
 ---
 
 ## [1.1.1] - 2026-09-23
 
 ### Changed
-- **Institutional Branding & Copyright**: Transitioned copyright and attribution uniformly to Biomedical Technologies Lab across licenses, documentation, metadata, and Hugging Face spaces.
-- **Probe Set Alignment**: Synchronized the official 300-probe bilingual clinical probe set (`BioinstLab/GMASS-probe-set-v1.0`) with updated patient/user-facing clinical framing.
-- **Repository Scaffolding**: Moved standalone manual evaluation scripts (`test_classifiers.py`, `test_models.py`) into `tests/manual/` and configured `pytest.ini` (`norecursedirs = manual`) to prevent discovery conflicts during automated CI runs.
+- **Repository Scaffolding**: Moved standalone manual evaluation scripts (`test_classifiers.py`, `test_models.py`) into `tests/manual/` and configured `pytest.ini` (`norecursedirs = manual`) to prevent discovery conflicts during automated test runs.
 
 ### Fixed
 - **Windows Setup Robustness (`setup.ps1`)**: Fixed Python candidate interpreter resolution to prioritize active virtual environment and `python`/`python3` over unconfigured Windows launchers (`py.exe`), resolving pip dependency backtracking timeouts on Windows CI runners.
-- **Gradio In-App Error Formatting**: Enhanced API key guidance and in-app diagnostics for missing credentials in both hosted Spaces and local session execution.
+- **In-App Diagnostics**: Enhanced guidance and diagnostic feedback for environment configuration in both hosted Spaces and local session execution.
 
 ---
 

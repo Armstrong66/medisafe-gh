@@ -781,7 +781,7 @@ G-MASS provides a tiered judge system to support institutions ranging from edge 
 
 ### 🏷️ Release History & Version Tags
 
-- **v1.1.1 (Current Release)**: Institutional transition to Biomedical Technologies Lab, 300-probe dataset synchronization, automated Windows setup robustness, and test scaffolding under `tests/manual/`.
+- **v1.1.1 (Current Release)**: Maintenance release: test suite scaffolding under `tests/manual/`, Windows setup interpreter resolution, and UI diagnostic improvements.
 - **v1.1.0**: Public metric export layer, dynamic dataset autodiscovery, compute tiering, safety drift detection engine, and community issue tracking.
 - **v1.0.0 (Initial Baseline)**: Initial 150-probe bilingual benchmark with LlamaGuard3, AfroLM, and Gemma ensemble.
 

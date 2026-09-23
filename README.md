@@ -152,16 +152,16 @@ translation/           # translation adapters
 scripts/               # reports, converters, deployment helpers
 configs/               # thresholds, scorer roles, model metadata
 app/                   # Gradio/Hugging Face Space app files
-tests/                 # regression tests for routing, scoring, metrics, reports
+tests/                 # automated regression test suite; manual scripts in tests/manual/
 ```
 
 `pyproject.toml` is the dependency source of truth. The `requirements*.txt`
 files are compatibility entry points for common install targets.
 
-Legacy exploratory scripts such as `run_pilot.py`, `test_models.py`, and
-`test_classifiers.py` are not the production entry point and are not installed
-as package modules. Prefer `gmass` and the tested scripts in `scripts/` for
-new work.
+Legacy exploratory scripts such as `run_pilot.py` and manual evaluation scripts
+in `tests/manual/` (`test_models.py`, `test_classifiers.py`) are not the production
+entry point and are not installed as package modules. Prefer `gmass` and the tested
+scripts in `scripts/` for new work.
 
 ## Environment Variables
 
