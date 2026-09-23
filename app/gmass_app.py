@@ -77,7 +77,7 @@ REQUIRED_ENV_BY_MODEL = {
     "biomistral": "HF_TOKEN",
 }
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 
 PUBLIC_METRICS_PATH = ROOT / "data" / "public_metrics" / "benchmark_summary.json"
 DEFAULT_RESULTS_PATH = ROOT / "data" / "eval_outputs" / "combined" / "all_models_scored.jsonl"
@@ -781,7 +781,8 @@ G-MASS provides a tiered judge system to support institutions ranging from edge 
 
 ### 🏷️ Release History & Version Tags
 
-- **v1.1.0 (Current Release)**: Public metric export layer, dynamic dataset autodiscovery, compute tiering, safety drift detection engine, and community issue tracking.
+- **v1.1.1 (Current Release)**: Institutional transition to Biomedical Technologies Lab, 300-probe dataset synchronization, automated Windows setup robustness, and test scaffolding under `tests/manual/`.
+- **v1.1.0**: Public metric export layer, dynamic dataset autodiscovery, compute tiering, safety drift detection engine, and community issue tracking.
 - **v1.0.0 (Initial Baseline)**: Initial 150-probe bilingual benchmark with LlamaGuard3, AfroLM, and Gemma ensemble.
 
 ---
@@ -1018,7 +1019,7 @@ function() {
 }
 """
 
-with gr.Blocks(title="G-MASS v1.1.0", theme=gr.themes.Soft(primary_hue="blue"), css=CSS, js=JS_THEME_INIT) as demo:
+with gr.Blocks(title="G-MASS v1.1.1", theme=gr.themes.Soft(primary_hue="blue"), css=CSS, js=JS_THEME_INIT) as demo:
     gr.HTML(
         f"""
         <div class="gmass-header">

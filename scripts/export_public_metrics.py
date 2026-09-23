@@ -60,7 +60,7 @@ def collect_scored_records(
     return records
 
 
-def generate_public_metrics(scored_records: list[dict], version: str = "1.1.0") -> dict:
+def generate_public_metrics(scored_records: list[dict], version: str = "1.1.1") -> dict:
     """
     Compute aggregate benchmark metrics stripped of any raw prompt or response text.
     """
@@ -175,8 +175,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--version",
-        default="1.1.0",
-        help="G-MASS benchmark software version (default: 1.1.0)",
+        default="1.1.1",
+        help="G-MASS benchmark software version (default: 1.1.1)",
     )
     args = parser.parse_args()
 

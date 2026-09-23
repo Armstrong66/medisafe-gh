@@ -16,6 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.1] - 2026-09-23
+
+### Changed
+- **Institutional Branding & Copyright**: Transitioned copyright and attribution uniformly to Biomedical Technologies Lab across licenses, documentation, metadata, and Hugging Face spaces.
+- **Probe Set Alignment**: Synchronized the official 300-probe bilingual clinical probe set (`BioinstLab/GMASS-probe-set-v1.0`) with updated patient/user-facing clinical framing.
+- **Repository Scaffolding**: Moved standalone manual evaluation scripts (`test_classifiers.py`, `test_models.py`) into `tests/manual/` and configured `pytest.ini` (`norecursedirs = manual`) to prevent discovery conflicts during automated CI runs.
+
+### Fixed
+- **Windows Setup Robustness (`setup.ps1`)**: Fixed Python candidate interpreter resolution to prioritize active virtual environment and `python`/`python3` over unconfigured Windows launchers (`py.exe`), resolving pip dependency backtracking timeouts on Windows CI runners.
+- **Gradio In-App Error Formatting**: Enhanced API key guidance and in-app diagnostics for missing credentials in both hosted Spaces and local session execution.
+
+---
+
 ## [1.1.0] - 2026-08-18
 
 ### Added
