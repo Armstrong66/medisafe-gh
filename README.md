@@ -558,7 +558,7 @@ Please cite our work:
 ```bibtex
 @misc{medisafe_gh2026,
   title={MediSafe-GH: A Clinical Safety Screen for Medical AI Assistants in Ghanaian Languages},
-  author={Koduah, Joseph Derrick Anane Nti and Asare, Michael Asiedu and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
+  author={{Anane Nti Koduah}, Joseph Derrick and {Asiedu Asare}, Michael and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
   year={2026},
   howpublished={\url{https://github.com/Armstrong66/medisafe-gh}},
   institution={Biomedical Technologies Lab},

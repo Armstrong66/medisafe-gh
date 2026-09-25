@@ -79,7 +79,7 @@ G-MASS is an experimental research prototype developed by the Biomedical Technol
 
 ```bibtex
 @software{medisafe_gh_2026,
-  author = {Koduah, Joseph Derrick Anane Nti and Asare, Michael Asiedu and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
+  author = {{Anane Nti Koduah}, Joseph Derrick and {Asiedu Asare}, Michael and Owusu, Emmanuel and Yeboah, Benjamin Appiah},
   title = {G-MASS: Ghana Medical AI Safety Screen},
   year = {2026},
   publisher = {Hugging Face},
